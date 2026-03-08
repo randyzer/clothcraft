@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { volcanoEngine, parseSSEChunk } from "@/lib/volcano-engine";
 import { ChatMessage } from "@/lib/volcano-engine/types";
 import { randomUUID } from "crypto";
+import { getOrCreateOwnedChatSession } from "@/lib/chat-session";
 
 export async function POST(req: NextRequest) {
   try {
@@ -47,17 +48,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Get or create chat session
-    let chatSessionId = sessionId;
-    if (!chatSessionId) {
-      // Create new session
-      chatSessionId = randomUUID();
-      await db.insert(chatSession).values({
-        id: chatSessionId,
-        userId,
-        title: message.substring(0, 100),
-        model: "doubao-1-5-thinking-pro-250415",
+    const sessionResult = await getOrCreateOwnedChatSession({
+      userId,
+      sessionId,
+      title: message.substring(0, 100),
+      model: "doubao-1-5-thinking-pro-250415",
+    });
+
+    if (!sessionResult.ok) {
+      return new Response(JSON.stringify({ error: sessionResult.error }), {
+        status: sessionResult.status,
+        headers: { "Content-Type": "application/json" },
       });
     }
+    const chatSessionId = sessionResult.sessionId;
 
     // Deduct credits
     const deductResult = await deductCredits(userId, 10, "chat_usage", chatSessionId);
