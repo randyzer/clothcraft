@@ -45,7 +45,8 @@
       "image": "Image",
       "video": "Video",
       "credits": "Credits",
-      "profile": "Profile"
+      "profile": "Profile",
+      "settings": "Settings"
     },
     "footer": {
       "legal": {
@@ -729,7 +730,7 @@
           "proMonthly": "Pro Monthly",
           "proYearly": "Pro Yearly"
         },
-        "buyCredits": "Buy 200 Credits ($5)",
+        "buyCredits": "Buy {credits} Credits ({price})",
         "viewCredits": "View Credits"
       }
     },
@@ -841,6 +842,43 @@
       "updating": "Updating...",
       "updateSuccess": "Profile updated successfully",
       "updateError": "Failed to update profile"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your profile, billing, and security from one place.",
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "description": "Update the name shown across your workspace.",
+        "nameLabel": "Display name",
+        "namePlaceholder": "Enter your name",
+        "emailLabel": "Email address",
+        "save": "Save changes",
+        "saving": "Saving...",
+        "saveSuccess": "Profile updated successfully.",
+        "saveError": "Failed to update profile.",
+        "validation": "Name must be at least 2 characters."
+      },
+      "billing": {
+        "title": "Billing & Credits",
+        "description": "See your current plan and jump into credits or pricing.",
+        "currentPlan": "Current plan",
+        "creditsBalance": "Credits balance",
+        "renewal": "Next renewal",
+        "noRenewal": "No active subscription",
+        "manageCredits": "Manage credits",
+        "viewPricing": "View pricing"
+      },
+      "security": {
+        "title": "Security",
+        "description": "Review account status and sign out safely.",
+        "emailStatus": "Email status",
+        "accountId": "Account ID",
+        "memberSince": "Member since",
+        "viewProfile": "View profile",
+        "signOut": "Sign out"
+      }
     }
   },
   "contact": {

@@ -43,6 +43,10 @@ export const appNavigationKeys = [
     href: "/dashboard",
   },
   {
+    key: "settings",
+    href: "/settings",
+  },
+  {
     key: "profile",
     href: "/profile",
   },
@@ -72,6 +76,10 @@ export const appNavigation: NavigationItem[] = [
   {
     title: "Dashboard",
     href: "/dashboard",
+  },
+  {
+    title: "Settings",
+    href: "/settings",
   },
   {
     title: "Profile",

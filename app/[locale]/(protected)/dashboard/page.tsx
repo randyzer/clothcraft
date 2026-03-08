@@ -8,6 +8,8 @@ import { Container } from "@/components/container";
 import { Background } from "@/components/background";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import { getDefaultOneTimePack } from "@/lib/billing-display";
+import { getSubscriptionPlanTranslationKey } from "@/lib/account-settings";
 
 
 export default function DashboardPage() {
@@ -20,6 +22,7 @@ export default function DashboardPage() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const defaultPack = getDefaultOneTimePack();
 
   // Fetch user profile with credits and subscription
   const fetchUserProfile = useCallback(async () => {
@@ -72,20 +75,22 @@ export default function DashboardPage() {
       const res = await fetch("/api/payments/creem/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "pack_200", kind: "one_time" }),
+        body: JSON.stringify({ key: defaultPack.key, kind: "one_time" }),
       });
       if (!res.ok) return;
       const { url } = (await res.json()) as { url: string };
       window.location.href = url;
     },
-    [session.data?.user?.id]
+    [defaultPack.key, session.data?.user?.id]
   );
 
   // Authentication is already handled in the layout
   const user = session.data?.user;
   const displayUser = userProfile || user;
   const credits = userProfile?.credits ?? 0;
-  const subscriptionPlan = userProfile?.subscription?.planKey || "Free";
+  const subscriptionPlanKey = getSubscriptionPlanTranslationKey(
+    userProfile?.subscription?.planKey
+  );
 
   if (loading && !user) {
     return (
@@ -167,19 +172,21 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="w-full justify-start transition-colors"
-                onClick={() => router.push(`/${locale}/profile`)}
+                onClick={() => router.push(`/${locale}/settings#profile`)}
               >
                 {t('cards.quickActions.editProfile')}
               </Button>
               <Button
                 variant="outline"
                 className="w-full justify-start transition-colors"
+                onClick={() => router.push(`/${locale}/settings#billing`)}
               >
                 {t('cards.quickActions.accountSettings')}
               </Button>
               <Button
                 variant="outline"
                 className="w-full justify-start transition-colors"
+                onClick={() => router.push(`/${locale}/settings#security`)}
               >
                 {t('cards.quickActions.securitySettings')}
               </Button>
@@ -203,11 +210,7 @@ export default function DashboardPage() {
               <div className="flex flex-col">
                 <span className="text-sm text-muted-foreground">{t('cards.statistics.labels.plan')}</span>
                 <span className="text-base font-medium text-card-foreground">
-                  {subscriptionPlan === "starter_monthly" ? t('cards.statistics.plans.starterMonthly') :
-                   subscriptionPlan === "starter_yearly" ? t('cards.statistics.plans.starterYearly') :
-                   subscriptionPlan === "pro_monthly" ? t('cards.statistics.plans.proMonthly') :
-                   subscriptionPlan === "pro_yearly" ? t('cards.statistics.plans.proYearly') :
-                   t('cards.statistics.plans.free')}
+                  {t(`cards.statistics.plans.${subscriptionPlanKey}`)}
                 </span>
               </div>
               <div className="flex flex-col">
@@ -227,7 +230,10 @@ export default function DashboardPage() {
                   className="w-full justify-start transition-colors"
                   onClick={startCheckout}
                 >
-                  {t('cards.statistics.buyCredits')}
+                  {t('cards.statistics.buyCredits', {
+                    credits: defaultPack.displayCredits,
+                    price: defaultPack.displayPrice,
+                  })}
                 </Button>
               </div>
             </div>

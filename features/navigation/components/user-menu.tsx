@@ -5,7 +5,14 @@ import Link from "next/link";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from 'next-intl';
-import { IconUser, IconLogout, IconLayoutDashboard, IconShield, IconCoins } from "@tabler/icons-react";
+import {
+  IconUser,
+  IconLogout,
+  IconLayoutDashboard,
+  IconShield,
+  IconCoins,
+  IconSettings,
+} from "@tabler/icons-react";
 
 export function UserMenu() {
   const session = useSession();
@@ -110,6 +117,15 @@ export function UserMenu() {
             >
               <IconLayoutDashboard className="w-4 h-4" />
               {t('navigation.main.dashboard')}
+            </Link>
+
+            <Link
+              href={`/${locale}/settings`}
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:bg-hover transition-colors"
+            >
+              <IconSettings className="w-4 h-4" />
+              {t('navigation.main.settings')}
             </Link>
 
             {isAdmin && (

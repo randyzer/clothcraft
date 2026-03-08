@@ -7,6 +7,7 @@ import { Container } from "@/components/container";
 import { Background } from "@/components/background";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import { getSubscriptionPlanTranslationKey } from "@/lib/account-settings";
 
 export default function ProfilePage() {
   const session = useSession();
@@ -41,7 +42,9 @@ export default function ProfilePage() {
   // Authentication is already handled in the layout
   const user = session.data?.user;
   const displayUser = userProfile || user;
-  const subscriptionPlan = userProfile?.subscription?.planKey || "free";
+  const subscriptionPlanKey = getSubscriptionPlanTranslationKey(
+    userProfile?.subscription?.planKey
+  );
   const initial = displayUser?.name ? displayUser.name.charAt(0).toUpperCase() : displayUser?.email?.charAt(0).toUpperCase() || "U";
   
   // Format registration date
@@ -160,11 +163,7 @@ export default function ProfilePage() {
                     <div className="bg-muted/50 rounded-xl p-4">
                       <span className="text-sm text-muted-foreground block mb-1">{t('sections.accountSettings.accountType')}</span>
                       <span className="text-lg font-medium text-card-foreground">
-                        {subscriptionPlan === "starter_monthly" ? tDashboard('cards.statistics.plans.starterMonthly') :
-                         subscriptionPlan === "starter_yearly" ? tDashboard('cards.statistics.plans.starterYearly') :
-                         subscriptionPlan === "pro_monthly" ? tDashboard('cards.statistics.plans.proMonthly') :
-                         subscriptionPlan === "pro_yearly" ? tDashboard('cards.statistics.plans.proYearly') :
-                         tDashboard('cards.statistics.plans.free')}
+                        {tDashboard(`cards.statistics.plans.${subscriptionPlanKey}`)}
                       </span>
                     </div>
                     <div className="bg-muted/50 rounded-xl p-4">

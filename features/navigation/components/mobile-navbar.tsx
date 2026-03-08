@@ -182,6 +182,13 @@ export const MobileNavbar = () => {
                     {t('dashboard')}
                   </Link>
                   <Link
+                    href={`/${locale}/settings`}
+                    onClick={() => setOpen(false)}
+                    className="text-[15px] font-medium text-muted-foreground py-2 hover:text-foreground transition-colors"
+                  >
+                    {t('settings')}
+                  </Link>
+                  <Link
                     href={`/${locale}/profile`}
                     onClick={() => setOpen(false)}
                     className="text-[15px] font-medium text-muted-foreground py-2 hover:text-foreground transition-colors"

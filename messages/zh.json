@@ -45,7 +45,8 @@
       "image": "图片",
       "video": "视频",
       "credits": "积分管理",
-      "profile": "个人资料"
+      "profile": "个人资料",
+      "settings": "设置"
     },
     "footer": {
       "legal": {
@@ -728,7 +729,7 @@
           "proMonthly": "专业版 (月付)",
           "proYearly": "专业版 (年付)"
         },
-        "buyCredits": "购买 200 点数 ($5)",
+        "buyCredits": "购买 {credits} 点数 ({price})",
         "viewCredits": "查看积分"
       }
     },
@@ -840,6 +841,43 @@
       "updating": "更新中...",
       "updateSuccess": "个人资料更新成功",
       "updateError": "个人资料更新失败"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "在一个地方管理个人资料、账单和账户安全。",
+    "sections": {
+      "profile": {
+        "title": "个人资料",
+        "description": "更新在工作区中展示的名称。",
+        "nameLabel": "显示名称",
+        "namePlaceholder": "输入您的名字",
+        "emailLabel": "邮箱地址",
+        "save": "保存更改",
+        "saving": "保存中...",
+        "saveSuccess": "个人资料已更新。",
+        "saveError": "更新个人资料失败。",
+        "validation": "名称至少需要 2 个字符。"
+      },
+      "billing": {
+        "title": "账单与积分",
+        "description": "查看当前方案，并快速进入积分和定价页面。",
+        "currentPlan": "当前方案",
+        "creditsBalance": "积分余额",
+        "renewal": "下次续费",
+        "noRenewal": "当前没有激活订阅",
+        "manageCredits": "管理积分",
+        "viewPricing": "查看定价"
+      },
+      "security": {
+        "title": "安全",
+        "description": "查看账户状态并安全退出登录。",
+        "emailStatus": "邮箱状态",
+        "accountId": "账户 ID",
+        "memberSince": "注册时间",
+        "viewProfile": "查看个人资料",
+        "signOut": "退出登录"
+      }
     }
   },
   "contact": {
