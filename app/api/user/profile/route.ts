@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user as userTable, subscription as subscriptionTable } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { getActiveSessionUser } from "@/lib/auth/session";
 
 export async function GET(req: NextRequest) {
   try {
     // Get session from Better Auth
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session?.session?.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const access = await getActiveSessionUser(req.headers);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    const userId = session.session.userId;
+    const userId = access.user.id;
 
     // Get user with credits
     const users = await db

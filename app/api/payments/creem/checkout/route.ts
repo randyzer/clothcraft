@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isPackKey, isSubscriptionKey, oneTimePacks, subscriptionPlans } from "@/constants/billing";
 import { createCheckoutSession } from "@/lib/payments/creem";
-import { auth } from "@/lib/auth";
+import { getActiveSessionUser } from "@/lib/auth/session";
 
 type Body = {
   kind: "subscription" | "one_time";
@@ -14,9 +14,11 @@ export async function POST(req: NextRequest) {
     const { kind, key } = body;
 
     // Get user from Better Auth session (do not trust client userId)
-    const session = await auth.api.getSession({ headers: req.headers });
-    const userId = session?.session?.userId;
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const access = await getActiveSessionUser(req.headers);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
+    }
+    const userId = access.user.id;
 
     let creemPriceId: string | undefined;
     // Add success=1 so client has a stable success signal on return

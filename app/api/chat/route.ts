@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { chatSession, chatMessage } from "@/lib/db/schema";
 import { canUserChat, deductCredits } from "@/lib/credits";
@@ -9,19 +8,17 @@ import { ChatMessage } from "@/lib/volcano-engine/types";
 import { randomUUID } from "crypto";
 import { getOrCreateOwnedChatSession } from "@/lib/chat-session";
 import { createCreditCompensation } from "@/lib/credit-compensation";
+import { getActiveSessionUser } from "@/lib/auth/session";
 
 export async function POST(req: NextRequest) {
   try {
     // Authenticate user
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session?.session?.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const access = await getActiveSessionUser(req.headers);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    const userId = session.session.userId;
+    const userId = access.user.id;
 
     // Parse request body
     const { message, sessionId } = await req.json();

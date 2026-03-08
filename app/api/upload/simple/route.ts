@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getActiveSessionUser } from "@/lib/auth/session";
 
 export async function POST(req: NextRequest) {
   try {
     // Authenticate user
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session?.session?.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const access = await getActiveSessionUser(req.headers);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
     const formData = await req.formData();

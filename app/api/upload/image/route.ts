@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { uploadImageFromUrl } from "@/lib/r2-storage";
+import { getActiveSessionUser } from "@/lib/auth/session";
 
 // Simple image dimension detection for common formats
 async function getImageDimensions(buffer: Buffer, mimeType: string): Promise<{ width: number; height: number } | null> {
@@ -55,15 +55,12 @@ async function getImageDimensions(buffer: Buffer, mimeType: string): Promise<{ w
 export async function POST(req: NextRequest) {
   try {
     // Authenticate user
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session?.session?.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const access = await getActiveSessionUser(req.headers);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    const userId = session.session.userId;
+    const userId = access.user.id;
 
     // Parse form data
     const formData = await req.formData();

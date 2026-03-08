@@ -2,26 +2,23 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generationHistory } from "@/lib/db/schema";
 import { volcanoEngine } from "@/lib/volcano-engine";
 import { normalizeStatus } from "@/lib/volcano-engine/video";
 import { uploadImageFromUrl } from "@/lib/r2-storage";
 import { eq, and } from "drizzle-orm";
+import { getActiveSessionUser } from "@/lib/auth/session";
 
 export async function GET(req: NextRequest) {
   try {
     // Authenticate user
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    });
-
-    if (!session?.session?.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const access = await getActiveSessionUser(req.headers);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    const userId = session.session.userId;
+    const userId = access.user.id;
 
     // Get task ID from query params
     const searchParams = req.nextUrl.searchParams;
