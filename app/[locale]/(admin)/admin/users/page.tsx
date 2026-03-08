@@ -1,42 +1,51 @@
-import { db } from "@/lib/db";
-import { user } from "@/lib/db/schema";
+import { getTranslations } from "next-intl/server";
 import { UsersTable } from "@/features/admin/components/users-table";
-import { sql } from "drizzle-orm";
+import {
+  type AdminUsersDirectorySearchParams,
+  getAdminUsersDirectory,
+} from "@/lib/admin-user-directory";
+import type { Locale } from "@/i18n.config";
 
-export default async function AdminUsersPage() {
-  // 获取所有用户
-  const users = await db
-    .select({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      emailVerified: user.emailVerified,
-      credits: user.credits,
-      role: user.role,
-      banned: user.banned,
-      banReason: user.banReason,
-      banExpires: user.banExpires,
-      planKey: user.planKey,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    })
-    .from(user)
-    .orderBy(sql`${user.createdAt} desc`);
+interface AdminUsersPageProps {
+  params: {
+    locale: Locale;
+  };
+  searchParams?: AdminUsersDirectorySearchParams;
+}
+
+export default async function AdminUsersPage({
+  searchParams,
+  params: { locale },
+}: AdminUsersPageProps) {
+  const t = await getTranslations({ locale, namespace: "Admin.users" });
+  const directory = await getAdminUsersDirectory(searchParams);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">
-          用户管理
+          {t("title")}
         </h1>
         <div className="flex items-center gap-4">
           <div className="text-sm text-muted-foreground">
-            共 {users.length} 个用户
+            {directory.query
+              ? t("matchingUsers", {
+                  count: directory.totalUsers,
+                  query: directory.query,
+                })
+              : t("totalUsers", { count: directory.totalUsers })}
           </div>
         </div>
       </div>
 
-      <UsersTable users={users} />
+      <UsersTable
+        currentPage={directory.currentPage}
+        pageSize={directory.pageSize}
+        query={directory.query}
+        totalPages={directory.totalPages}
+        totalUsers={directory.totalUsers}
+        users={directory.users}
+      />
     </div>
   );
 }

@@ -1,65 +1,56 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/button";
 import {
-  Edit,
   Ban,
-  Shield,
   User,
   MoreVertical,
   CreditCard,
   Mail,
   Calendar,
   Search,
-  ShoppingCart,
   Plus,
   Minus,
   Package
 } from "lucide-react";
 import { updateUserRole, banUser, updateUserCredits } from "@/features/admin/actions/user-actions";
 import { toast } from "sonner";
+import type { AdminUserListItem } from "@/lib/admin-user-directory";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  emailVerified: boolean;
-  credits: number;
-  role: string;
-  banned: boolean;
-  banReason: string | null;
-  banExpires: Date | null;
-  planKey: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
+type User = AdminUserListItem;
 
 interface UsersTableProps {
   users: User[];
+  query: string;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalUsers: number;
 }
 
-export function UsersTable({ users: initialUsers }: UsersTableProps) {
+export function UsersTable({
+  users: initialUsers,
+  query,
+  currentPage,
+  pageSize,
+  totalPages,
+  totalUsers,
+}: UsersTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [users, setUsers] = useState(initialUsers);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(query);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [userPage, setUserPage] = useState(1);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const t = useTranslations("Admin.users");
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const usersPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / usersPerPage));
-  const startIndex = (userPage - 1) * usersPerPage;
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + usersPerPage);
+  const hasResults = users.length > 0;
+  const pageStart = totalUsers === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const pageEnd = totalUsers === 0 ? 0 : Math.min(totalUsers, pageStart + users.length - 1);
   const pageNumbers = useMemo(() => {
     const maxButtons = 5;
     if (totalPages <= maxButtons) {
@@ -67,7 +58,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
     }
 
     const halfWindow = Math.floor(maxButtons / 2);
-    let start = Math.max(1, userPage - halfWindow);
+    let start = Math.max(1, currentPage - halfWindow);
     let end = start + maxButtons - 1;
 
     if (end > totalPages) {
@@ -76,22 +67,59 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
     }
 
     return Array.from({ length: end - start + 1 }, (_, index) => start + index);
-  }, [userPage, totalPages]);
+  }, [currentPage, totalPages]);
 
   useEffect(() => {
-    setUserPage(1);
-  }, [searchTerm]);
+    setUsers(initialUsers);
+  }, [initialUsers]);
 
   useEffect(() => {
-    if (userPage > totalPages) {
-      setUserPage(totalPages);
+    setSearchTerm(query);
+  }, [query]);
+
+  const createUsersUrl = (nextQuery: string, nextPage: number) => {
+    const params = new URLSearchParams();
+
+    if (nextQuery) {
+      params.set("query", nextQuery);
     }
-  }, [userPage, totalPages]);
+
+    if (nextPage > 1) {
+      params.set("page", String(nextPage));
+    }
+
+    const queryString = params.toString();
+    return queryString ? `${pathname}?${queryString}` : pathname;
+  };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const normalizedSearchTerm = searchTerm.trim();
+    router.replace(createUsersUrl(normalizedSearchTerm, 1), { scroll: false });
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    router.replace(pathname, { scroll: false });
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    if (pageNumber < 1 || pageNumber > totalPages || pageNumber === currentPage) {
+      return;
+    }
+
+    router.push(createUsersUrl(query, pageNumber), { scroll: false });
+  };
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
     try {
       await updateUserRole(userId, newRole);
-      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      setUsers((currentUsers) =>
+        currentUsers.map((existingUser) =>
+          existingUser.id === userId ? { ...existingUser, role: newRole } : existingUser
+        )
+      );
       toast.success(t("roleUpdated"));
     } catch (error) {
       toast.error(t("roleUpdateFailed"));
@@ -101,7 +129,13 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
   const handleBanUser = async (userId: string, banned: boolean, reason?: string) => {
     try {
       await banUser(userId, banned, reason);
-      setUsers(users.map(u => u.id === userId ? { ...u, banned, banReason: reason || null } : u));
+      setUsers((currentUsers) =>
+        currentUsers.map((existingUser) =>
+          existingUser.id === userId
+            ? { ...existingUser, banned, banReason: reason || null }
+            : existingUser
+        )
+      );
       toast.success(banned ? t("userBanned") : t("userUnbanned"));
     } catch (error) {
       toast.error(t("banFailed"));
@@ -111,7 +145,11 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
   const handleUpdateCredits = async (userId: string, credits: number) => {
     try {
       await updateUserCredits(userId, credits);
-      setUsers(users.map(u => u.id === userId ? { ...u, credits } : u));
+      setUsers((currentUsers) =>
+        currentUsers.map((existingUser) =>
+          existingUser.id === userId ? { ...existingUser, credits } : existingUser
+        )
+      );
       toast.success(t("creditsUpdated"));
     } catch (error) {
       toast.error(t("creditsUpdateFailed"));
@@ -121,7 +159,10 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
   return (
     <div className="space-y-4">
       {/* 搜索栏 */}
-      <div className="flex items-center gap-4">
+      <form
+        onSubmit={handleSearchSubmit}
+        className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+      >
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -132,6 +173,23 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
             className="w-full pl-11 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
+        <div className="flex items-center gap-2">
+          <Button type="submit" size="sm" variant="outline">
+            {t("searchAction")}
+          </Button>
+          {query ? (
+            <Button type="button" size="sm" variant="simple" onClick={handleClearSearch}>
+              {t("clearSearch")}
+            </Button>
+          ) : null}
+        </div>
+      </form>
+
+      <div className="text-sm text-muted-foreground">
+        {query
+          ? t("matchingUsers", { count: totalUsers, query })
+          : t("totalUsers", { count: totalUsers })}
+        {hasResults ? ` | ${t("pageSummary", { from: pageStart, to: pageEnd, total: totalUsers })}` : ""}
       </div>
 
       {/* 用户表格 */}
@@ -164,7 +222,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {paginatedUsers.map((user) => (
+              {users.map((user) => (
                 <tr key={user.id} className="hover:bg-hover">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-6">
@@ -285,19 +343,26 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                   </td>
                 </tr>
               ))}
+              {!hasResults ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                    {query ? t("emptySearchState") : t("emptyState")}
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
 
-        {filteredUsers.length > 0 && (
+        {totalUsers > 0 && (
           <nav
             className="flex items-center justify-between px-6 py-4 border-t border-border bg-secondary"
-            aria-label={t("pagination.page", { current: userPage, total: totalPages })}
+            aria-label={t("pagination.page", { current: currentPage, total: totalPages })}
           >
             <button
               type="button"
-              onClick={() => setUserPage((page) => Math.max(1, page - 1))}
-              disabled={userPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
               className="px-3 py-1.5 text-sm font-medium rounded-md border border-border text-muted-foreground hover:bg-hover disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t("pagination.previous")}
@@ -307,8 +372,8 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
               {pageNumbers[0] > 1 && (
                 <button
                   type="button"
-                  onClick={() => setUserPage(1)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${userPage === 1 ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                  onClick={() => handlePageChange(1)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${currentPage === 1 ? "bg-foreground text-background" : "text-muted-foreground"}`}
                 >
                   1
                 </button>
@@ -319,11 +384,11 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                 <button
                   key={pageNumber}
                   type="button"
-                  onClick={() => setUserPage(pageNumber)}
+                  onClick={() => handlePageChange(pageNumber)}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${
-                    userPage === pageNumber ? "bg-foreground text-background" : "text-muted-foreground"
+                    currentPage === pageNumber ? "bg-foreground text-background" : "text-muted-foreground"
                   }`}
-                  aria-current={userPage === pageNumber ? "page" : undefined}
+                  aria-current={currentPage === pageNumber ? "page" : undefined}
                 >
                   {pageNumber}
                 </button>
@@ -335,8 +400,8 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
               {pageNumbers[pageNumbers.length - 1] < totalPages && (
                 <button
                   type="button"
-                  onClick={() => setUserPage(totalPages)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${userPage === totalPages ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                  onClick={() => handlePageChange(totalPages)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${currentPage === totalPages ? "bg-foreground text-background" : "text-muted-foreground"}`}
                 >
                   {totalPages}
                 </button>
@@ -345,8 +410,8 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
 
             <button
               type="button"
-              onClick={() => setUserPage((page) => Math.min(totalPages, page + 1))}
-              disabled={userPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
               className="px-3 py-1.5 text-sm font-medium rounded-md border border-border text-muted-foreground hover:bg-hover disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t("pagination.next")}

@@ -574,7 +574,15 @@
       "unknownUser": "未知用户"
     },
     "users": {
+      "title": "用户管理",
       "searchPlaceholder": "搜索用户姓名或邮箱...",
+      "searchAction": "搜索",
+      "clearSearch": "清空",
+      "totalUsers": "共 {count} 个用户",
+      "matchingUsers": "\"{query}\" 匹配到 {count} 个用户",
+      "pageSummary": "显示第 {from}-{to} 条，共 {total} 条",
+      "emptyState": "暂无用户",
+      "emptySearchState": "没有匹配的用户",
       "user": "用户",
       "role": "角色",
       "credits": "积分",

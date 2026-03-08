@@ -574,7 +574,15 @@
       "unknownUser": "Unknown User"
     },
     "users": {
+      "title": "User Management",
       "searchPlaceholder": "Search by name or email...",
+      "searchAction": "Search",
+      "clearSearch": "Clear",
+      "totalUsers": "{count} users",
+      "matchingUsers": "{count} matching users for \"{query}\"",
+      "pageSummary": "Showing {from}-{to} of {total}",
+      "emptyState": "No users found yet",
+      "emptySearchState": "No users match this search",
       "user": "User",
       "role": "Role",
       "credits": "Credits",
