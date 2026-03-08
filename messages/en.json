@@ -95,120 +95,75 @@
   "pricing": {
     "title": "Pricing Plans",
     "subtitle": "Simple, transparent pricing that scales with your business",
-    "description": "This pricing section is built with Sistine Starter. Creem subscriptions, usage tracking, and billing portal included. Start free, upgrade when you need more power.",
+    "description": "Choose between live recurring subscriptions and a one-time credit top-up. Every price on this page is driven directly from the billing config used at checkout.",
     "billing": {
       "monthly": "Monthly",
       "yearly": "Yearly"
     },
     "comparison": {
-      "title": "Feature Comparison",
-      "features": {
-        "createAPIs": "Create APIs",
-        "accessToDashboard": "Access to Dashboard",
-        "shareFunctionality": "Share functionality",
-        "playgroundEditor": "Playground Editor",
-        "marketplaceAccess": "Marketplace access",
-        "onCallSupport": "On call support",
-        "developerProgram": "Developer Program",
-        "advancedAnalytics": "Advanced Analytics",
-        "longRunningAPIs": "Long running APIs",
-        "zeroDowntimeGuarantee": "Zero Downtime Guarantee",
-        "customAnalytics": "Custom Analytics",
-        "singleSignOn": "Single Sign On",
-        "securityCertificate": "Security certificate",
-        "retweetsFromUs": "Retweets from us",
-        "weSendYouFlowers": "We send you flowers"
+      "title": "Plan Comparison",
+      "rows": {
+        "purchaseType": "Purchase type",
+        "monthlyPrice": "Monthly price",
+        "yearlyPrice": "Yearly price",
+        "monthlyCredits": "Credits on monthly billing",
+        "yearlyCredits": "Credits on yearly billing",
+        "delivery": "Credit delivery",
+        "bestFor": "Best for"
       },
       "values": {
-        "onDemand": "On demand",
-        "ifYouAskNicely": "If you ask nicely",
-        "probablyNever": "Probably never",
-        "nuhUh": "Nuh uh"
+        "subscription": "Subscription",
+        "oneTime": "One-time pack",
+        "notApplicable": "N/A",
+        "creditsPerMonth": "{credits} / month",
+        "creditsPerYear": "{credits} / year",
+        "oneTimeCredits": "{credits} once",
+        "yearlyInstallments": "{credits} released each month on annual billing",
+        "instantAfterPayment": "Added instantly after payment",
+        "bestForStarter": "Shipping an MVP with recurring usage",
+        "bestForPro": "Heavier production workloads and frequent generation",
+        "bestForCredits": "Top-ups without changing your subscription"
       }
     },
+    "details": {
+      "monthlyCredits": "{credits} credits each month",
+      "yearlyCredits": "{credits} credits per year",
+      "subscriptionDelivery": "Recurring subscription billed through Creem",
+      "yearlyInstallments": "Annual billing releases {credits} credits each month",
+      "oneTimeCredits": "{credits} credits in one payment",
+      "oneTimeDelivery": "One-time checkout, credits added instantly"
+    },
     "tiers": {
-      "free": {
-        "name": "Free",
-        "description": "Perfect for trying out",
-        "price": {
-          "monthly": "$0",
-          "yearly": "$0"
-        },
-        "cta": "Start Free",
-        "features": [
-          "100 AI operations/month",
-          "3 active workflows",
-          "Basic integrations",
-          "Community support",
-          "Basic analytics"
-        ]
-      },
       "starter": {
         "name": "Starter",
-        "description": "For individuals and small teams",
-        "price": {
-          "monthly": "$29",
-          "yearly": "$290"
-        },
-        "cta": "Start Trial",
+        "description": "For validating an AI product before you need high volume.",
+        "cta": "Choose Starter",
         "features": [
-          "1,000 AI operations/month",
-          "Unlimited workflows",
-          "All integrations",
-          "Email support",
-          "Advanced AI models",
-          "Custom branding",
-          "API access"
+          "Access chat, image, and video generation",
+          "1,000 credits on monthly billing",
+          "Annual plan releases 1,000 credits each month",
+          "Buy extra credit packs whenever you need a top-up"
         ]
       },
-      "professional": {
-        "name": "Professional",
-        "description": "For growing businesses",
-        "price": {
-          "monthly": "$99",
-          "yearly": "$990"
-        },
-        "cta": "Get Started",
+      "pro": {
+        "name": "Pro",
+        "description": "For teams and products that need more generation capacity.",
+        "cta": "Choose Pro",
         "features": [
-          "10,000 AI operations/month",
-          "Priority processing",
-          "Custom AI training",
-          "Advanced API access",
-          "Priority support",
-          "Team collaboration",
-          "White-label options",
-          "Advanced analytics",
-          "SSO authentication"
-        ]
-      },
-      "enterprise": {
-        "name": "Enterprise",
-        "description": "For large organizations",
-        "price": {
-          "monthly": "Custom",
-          "yearly": "Custom"
-        },
-        "cta": "Contact Sales",
-        "features": [
-          "Unlimited AI operations",
-          "Dedicated infrastructure",
-          "Custom AI models",
-          "SLA guarantee",
-          "24/7 phone support",
-          "Custom integrations",
-          "On-premise deployment",
-          "Compliance certifications",
-          "Dedicated account manager"
+          "Access chat, image, and video generation",
+          "10,000 credits on monthly billing",
+          "Annual plan releases 10,000 credits each month",
+          "Better fit for heavier production usage"
         ]
       },
       "credits": {
         "name": "Credits Pack",
-        "description": "One-time purchase. No subscription.",
-        "price": "$5",
-        "cta": "Buy 200 Credits",
+        "description": "One-time credits you can stack on top of any plan.",
+        "cta": "Buy {credits} Credits",
         "features": [
-          "200 credits added instantly after payment",
-          "Keep your current plan"
+          "Credits are added immediately after payment",
+          "Keeps your current subscription unchanged",
+          "Useful for launches, spikes, and one-off bursts"
         ]
       }
     }

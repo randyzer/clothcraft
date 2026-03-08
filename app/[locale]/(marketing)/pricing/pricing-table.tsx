@@ -1,173 +1,145 @@
 "use client";
+
 import React from "react";
-import { IconCheck } from "@tabler/icons-react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
+import {
+  getDefaultOneTimePack,
+  getSubscriptionPlanDisplays,
+} from "@/lib/billing-display";
+
+type ComparisonCell = string;
 
 export function PricingTable() {
-  const t = useTranslations('pricing');
-  
-  const CheckIcon = () => {
-    return (
-      <IconCheck className="mx-auto h-4 w-4 flex-shrink-0 text-foreground" />
-    );
-  };
+  const t = useTranslations("pricing");
+  const subscriptionPlans = getSubscriptionPlanDisplays();
+  const defaultPack = getDefaultOneTimePack();
+  const [starterPlan, proPlan] = subscriptionPlans;
+
+  if (!starterPlan || !proPlan) {
+    return null;
+  }
 
   const tiers = [
-    { id: 'free', name: t('tiers.free.name') },
-    { id: 'starter', name: t('tiers.starter.name') },
-    { id: 'professional', name: t('tiers.professional.name') },
-    { id: 'enterprise', name: t('tiers.enterprise.name') }
+    ...[starterPlan, proPlan].map((plan) => ({
+      id: plan.id,
+      name: t(`tiers.${plan.id}.name`),
+    })),
+    {
+      id: defaultPack.key,
+      name: t("tiers.credits.name"),
+    },
   ];
 
-  const tableFeatures = [
+  const tableRows: Array<{
+    title: string;
+    values: Record<string, ComparisonCell>;
+  }> = [
     {
-      title: t('comparison.features.createAPIs'),
-      free: <CheckIcon />,
-      starter: <CheckIcon />,
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
+      title: t("comparison.rows.purchaseType"),
+      values: {
+        starter: t("comparison.values.subscription"),
+        pro: t("comparison.values.subscription"),
+        [defaultPack.key]: t("comparison.values.oneTime"),
+      },
     },
     {
-      title: t('comparison.features.accessToDashboard'),
-      free: <CheckIcon />,
-      starter: <CheckIcon />,
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
+      title: t("comparison.rows.monthlyPrice"),
+      values: {
+        starter: starterPlan.displayMonthlyPrice,
+        pro: proPlan.displayMonthlyPrice,
+        [defaultPack.key]: defaultPack.displayPrice,
+      },
     },
     {
-      title: t('comparison.features.shareFunctionality'),
-      free: <CheckIcon />,
-      starter: <CheckIcon />,
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
+      title: t("comparison.rows.yearlyPrice"),
+      values: {
+        starter: starterPlan.displayYearlyPrice,
+        pro: proPlan.displayYearlyPrice,
+        [defaultPack.key]: t("comparison.values.notApplicable"),
+      },
     },
     {
-      title: t('comparison.features.playgroundEditor'),
-      free: <CheckIcon />,
-      starter: <CheckIcon />,
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
+      title: t("comparison.rows.monthlyCredits"),
+      values: {
+        starter: t("comparison.values.creditsPerMonth", {
+          credits: starterPlan.displayMonthlyCredits,
+        }),
+        pro: t("comparison.values.creditsPerMonth", {
+          credits: proPlan.displayMonthlyCredits,
+        }),
+        [defaultPack.key]: t("comparison.values.oneTimeCredits", {
+          credits: defaultPack.displayCredits,
+        }),
+      },
     },
     {
-      title: t('comparison.features.marketplaceAccess'),
-      free: <CheckIcon />,
-      starter: <CheckIcon />,
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
+      title: t("comparison.rows.yearlyCredits"),
+      values: {
+        starter: t("comparison.values.creditsPerYear", {
+          credits: starterPlan.displayYearlyCredits,
+        }),
+        pro: t("comparison.values.creditsPerYear", {
+          credits: proPlan.displayYearlyCredits,
+        }),
+        [defaultPack.key]: t("comparison.values.notApplicable"),
+      },
     },
     {
-      title: t('comparison.features.onCallSupport'),
-      free: <CheckIcon />,
-      starter: <CheckIcon />,
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
+      title: t("comparison.rows.delivery"),
+      values: {
+        starter: t("comparison.values.yearlyInstallments", {
+          credits: starterPlan.displayYearlyCreditsPerGrant,
+        }),
+        pro: t("comparison.values.yearlyInstallments", {
+          credits: proPlan.displayYearlyCreditsPerGrant,
+        }),
+        [defaultPack.key]: t("comparison.values.instantAfterPayment"),
+      },
     },
     {
-      title: t('comparison.features.developerProgram'),
-      starter: <CheckIcon />,
-      free: <CheckIcon />,
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.advancedAnalytics'),
-      free: t('comparison.values.onDemand'),
-      starter: t('comparison.values.ifYouAskNicely'),
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.longRunningAPIs'),
-      free: t('comparison.values.probablyNever'),
-      starter: t('comparison.values.nuhUh'),
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.zeroDowntimeGuarantee'),
-      free: "",
-      starter: "",
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.customAnalytics'),
-      free: "",
-      starter: "",
-      professional: <CheckIcon />,
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.singleSignOn'),
-      free: "",
-      starter: "",
-      professional: "",
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.securityCertificate'),
-      free: "",
-      starter: "",
-      professional: "",
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.retweetsFromUs'),
-      free: "",
-      starter: "",
-      professional: "",
-      enterprise: <CheckIcon />,
-    },
-    {
-      title: t('comparison.features.weSendYouFlowers'),
-      free: "",
-      starter: "",
-      professional: "",
-      enterprise: <CheckIcon />,
+      title: t("comparison.rows.bestFor"),
+      values: {
+        starter: t("comparison.values.bestForStarter"),
+        pro: t("comparison.values.bestForPro"),
+        [defaultPack.key]: t("comparison.values.bestForCredits"),
+      },
     },
   ];
 
   return (
-    <div className="mx-auto w-full relative z-20 px-4 py-40">
+    <div className="relative z-20 mx-auto w-full px-4 py-40">
       <div className="mt-8 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <table className="min-w-full divide-y divide-border">
-              <thead className="">
+              <thead>
                 <tr>
-                  <th
-                    scope="col"
-                    className="max-w-xs py-3.5 pl-4 pr-3 text-left text-3xl  font-extrabold text-foreground sm:pl-0"
-                  ></th>
-                  {tiers?.map((item, index) => (
+                  <th className="max-w-xs py-3.5 pl-4 pr-3 text-left text-3xl font-extrabold text-foreground sm:pl-0" />
+                  {tiers.map((tier) => (
                     <th
                       scope="col"
                       className="px-3 py-3.5 text-center text-lg font-semibold text-foreground"
-                      key={`pricing-${index}`}
+                      key={tier.id}
                     >
-                      {item.name}
+                      {tier.name}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {tableFeatures.map((feature) => (
-                  <tr key={feature.title}>
+                {tableRows.map((row) => (
+                  <tr key={row.title}>
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-foreground sm:pl-0">
-                      {feature.title}
+                      {row.title}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground text-center">
-                      {feature.free}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground text-center">
-                      {feature.starter}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground text-center">
-                      {feature.professional}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground text-center">
-                      {feature.enterprise}
-                    </td>
+                    {tiers.map((tier) => (
+                      <td
+                        key={`${row.title}-${tier.id}`}
+                        className="whitespace-nowrap px-3 py-4 text-center text-sm text-muted-foreground"
+                      >
+                        {row.values[tier.id]}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
