@@ -1,7 +1,7 @@
 type CreateImageGenerationPayloadParams = {
   imageUrl?: string | null;
   prompt: string;
-  size: "1K" | "2K" | "4K";
+  size: "adaptive" | "1K" | "2K" | "4K";
   watermark: boolean;
 };
 

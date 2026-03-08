@@ -2,16 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { newsletterSubscription } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { sendEmail } from "@/lib/email";
+import { getResendClient, sendEmail } from "@/lib/email";
 import crypto from "crypto";
 import { z } from "zod";
-import { Resend } from "resend";
 
 const subscribeSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,7 +44,8 @@ export async function POST(request: NextRequest) {
         .where(eq(newsletterSubscription.id, subscription.id));
 
       // Update Resend Audience if configured
-      if (process.env.RESEND_AUDIENCE_ID) {
+      const resend = getResendClient();
+      if (process.env.RESEND_AUDIENCE_ID && resend) {
         try {
           // Try to update existing contact
           await resend.contacts.update({
@@ -103,7 +101,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Add to Resend Audience if configured
-    if (process.env.RESEND_AUDIENCE_ID) {
+    const resend = getResendClient();
+    if (process.env.RESEND_AUDIENCE_ID && resend) {
       try {
         await resend.contacts.create({
           email,

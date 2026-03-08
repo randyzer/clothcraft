@@ -26,4 +26,20 @@ describe("createImageGenerationPayload", () => {
       imageUrl: "https://cdn.example.com/reference.png",
     });
   });
+
+  it("supports adaptive sizing because the image demo uses it by default", () => {
+    expect(
+      createImageGenerationPayload({
+        prompt: "Turn this into a watercolor portrait",
+        size: "adaptive",
+        watermark: true,
+        imageUrl: "https://cdn.example.com/reference.png",
+      })
+    ).toEqual({
+      prompt: "Turn this into a watercolor portrait",
+      size: "adaptive",
+      watermark: true,
+      imageUrl: "https://cdn.example.com/reference.png",
+    });
+  });
 });

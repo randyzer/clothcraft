@@ -1,7 +1,5 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // 获取默认发件邮箱的函数
 const getDefaultFromEmail = () => {
   // 1. 优先使用用户配置的完整发件地址
@@ -29,7 +27,13 @@ const getDefaultFromEmail = () => {
   return `${fromName} <noreply@${process.env.RESEND_VERIFIED_DOMAIN}>`;
 };
 
-const DEFAULT_FROM_EMAIL = getDefaultFromEmail();
+export function getResendClient(apiKey = process.env.RESEND_API_KEY) {
+  if (!apiKey) {
+    return null;
+  }
+
+  return new Resend(apiKey);
+}
 
 export interface SendEmailOptions {
   to: string | string[];
@@ -47,17 +51,24 @@ export async function sendEmail({
   react,
   html,
   text,
-  from = DEFAULT_FROM_EMAIL,
+  from,
   replyTo,
 }: SendEmailOptions) {
   try {
+    const resend = getResendClient();
+    if (!resend) {
+      const error = new Error("RESEND_API_KEY is not configured");
+      console.warn("[Email] Skipping send because RESEND_API_KEY is missing");
+      return { success: false, error };
+    }
+
     const data = await resend.emails.send({
       to,
       subject,
       react,
       html,
       text,
-      from,
+      from: from ?? getDefaultFromEmail(),
       ...(replyTo ? { replyTo } : {}),
     });
 

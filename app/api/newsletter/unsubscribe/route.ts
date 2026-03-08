@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { newsletterSubscription } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { getResendClient } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +43,8 @@ export async function GET(request: NextRequest) {
       .where(eq(newsletterSubscription.id, sub.id));
 
     // Update Resend Audience if configured
-    if (process.env.RESEND_AUDIENCE_ID) {
+    const resend = getResendClient();
+    if (process.env.RESEND_AUDIENCE_ID && resend) {
       try {
         await resend.contacts.update({
           email: sub.email,
