@@ -9,6 +9,7 @@ import { Button } from "@/components/button";
 import { Container } from "@/components/container";
 import { Background } from "@/components/background";
 import { MarkdownMessage } from "@/components/markdown-message";
+import { createImageGenerationPayload } from "@/lib/image-generation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Send, 
@@ -64,6 +65,9 @@ export default function DemoPage() {
   const [imagePrompt, setImagePrompt] = useState("");
   const [imageSize, setImageSize] = useState<'1K' | '2K' | '4K'>('2K');
   const [imageWatermark, setImageWatermark] = useState(true);
+  const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
+  const [referenceImageName, setReferenceImageName] = useState<string | null>(null);
+  const [isUploadingReferenceImage, setIsUploadingReferenceImage] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GenerationResult[]>([]);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   
@@ -85,6 +89,7 @@ export default function DemoPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -223,10 +228,15 @@ export default function DemoPage() {
 
   // Image generation functions
   const handleGenerateImage = async () => {
-    if (!imagePrompt.trim() || isGeneratingImage) return;
+    if (!imagePrompt.trim() || isGeneratingImage || isUploadingReferenceImage) return;
 
     if (!session.data?.user) {
       router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!referenceImageUrl) {
+      setError(t("image.errors.missingReferenceImage"));
       return;
     }
 
@@ -234,16 +244,19 @@ export default function DemoPage() {
     setError(null);
 
     try {
+      const payload = createImageGenerationPayload({
+        prompt: imagePrompt.trim(),
+        size: imageSize,
+        watermark: imageWatermark,
+        imageUrl: referenceImageUrl,
+      });
+
       const response = await fetch("/api/image/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          prompt: imagePrompt.trim(),
-          size: imageSize,
-          watermark: imageWatermark,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -276,6 +289,67 @@ export default function DemoPage() {
     } finally {
       setIsGeneratingImage(false);
     }
+  };
+
+  const handleReferenceImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!session.data?.user) {
+      router.push(`/${locale}/login`);
+      e.target.value = "";
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError(t("image.errors.invalidFileType"));
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError(t("image.errors.fileTooLarge"));
+      e.target.value = "";
+      return;
+    }
+
+    setIsUploadingReferenceImage(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload/image", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      setReferenceImageUrl(data.url);
+      setReferenceImageName(data.filename || file.name);
+    } catch (uploadError: any) {
+      console.error("Error uploading reference image:", uploadError);
+      setError(uploadError.message || t("image.errors.uploadFailed"));
+    } finally {
+      setIsUploadingReferenceImage(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeReferenceImage = () => {
+    setReferenceImageUrl(null);
+    setReferenceImageName(null);
+    setError(null);
   };
 
   // Video generation functions
@@ -694,6 +768,48 @@ export default function DemoPage() {
 
                   {/* Image Input */}
                   <div className="border-t border-border pt-4">
+                    <div className="mb-4 rounded-xl border border-dashed border-border bg-background/40 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {t("image.reference.label")}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {referenceImageName || t("image.reference.hint")}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {referenceImageUrl && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={removeReferenceImage}
+                            >
+                              {t("image.reference.remove")}
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => imageFileInputRef.current?.click()}
+                            disabled={isUploadingReferenceImage}
+                          >
+                            {referenceImageUrl
+                              ? t("image.reference.replace")
+                              : t("image.reference.cta")}
+                          </Button>
+                        </div>
+                      </div>
+                      <input
+                        ref={imageFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleReferenceImageUpload}
+                      />
+                    </div>
                     {/* Options Row */}
                     <div className="flex gap-4 mb-3">
                       <div className="flex items-center gap-2">
@@ -727,15 +843,25 @@ export default function DemoPage() {
                         value={imagePrompt}
                         onChange={(e) => setImagePrompt(e.target.value)}
                         placeholder={t('image.placeholder')}
-                        disabled={isGeneratingImage || remainingCredits === 0}
+                        disabled={
+                          isGeneratingImage ||
+                          isUploadingReferenceImage ||
+                          remainingCredits === 0
+                        }
                         className="flex-1 px-4 py-3 bg-background/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
                       />
                       <Button
                         onClick={handleGenerateImage}
-                        disabled={!imagePrompt.trim() || isGeneratingImage || remainingCredits === 0}
+                        disabled={
+                          !imagePrompt.trim() ||
+                          !referenceImageUrl ||
+                          isGeneratingImage ||
+                          isUploadingReferenceImage ||
+                          remainingCredits === 0
+                        }
                         className="px-6"
                       >
-                        {isGeneratingImage ? (
+                        {isGeneratingImage || isUploadingReferenceImage ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
                           <Sparkles className="w-5 h-5" />

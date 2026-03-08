@@ -7,6 +7,7 @@ import { useSession } from "@/lib/auth-client";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/button";
 import { Background } from "@/components/background";
+import { createImageGenerationPayload } from "@/lib/image-generation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, 
@@ -301,17 +302,19 @@ export default function ImagePage() {
     setIsAutoPlaying(false);
 
     try {
+      const payload = createImageGenerationPayload({
+        prompt: imagePrompt.trim(),
+        size: imageSize,
+        watermark: imageWatermark,
+        imageUrl: referenceImageUrl,
+      });
+
       const response = await fetch("/api/image/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          prompt: imagePrompt.trim(),
-          size: imageSize,
-          watermark: imageWatermark,
-          imageUrl: referenceImageUrl,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
