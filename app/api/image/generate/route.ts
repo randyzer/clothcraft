@@ -7,6 +7,7 @@ import { volcanoEngine } from "@/lib/volcano-engine";
 import { randomUUID } from "crypto";
 import { uploadImageFromUrl } from "@/lib/r2-storage";
 import { eq } from "drizzle-orm";
+import { createCreditCompensation } from "@/lib/credit-compensation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -69,6 +70,13 @@ export async function POST(req: NextRequest) {
       }, { status: 402 });
     }
 
+    const compensation = createCreditCompensation({
+      userId,
+      amount: creditsNeeded,
+      reason: "image_generation_refund",
+      referenceId: historyId,
+    });
+
     try {
       // Generate image with options
       const result = await volcanoEngine.generateImage(prompt, {
@@ -95,6 +103,8 @@ export async function POST(req: NextRequest) {
         })
         .where(eq(generationHistory.id, historyId));
 
+      compensation.settle();
+
       return NextResponse.json({
         id: historyId,
         url: r2Url,
@@ -104,6 +114,7 @@ export async function POST(req: NextRequest) {
       });
 
     } catch (genError: any) {
+      await compensation.compensate();
       // Update history to failed
       await db.update(generationHistory)
         .set({ 

@@ -8,6 +8,7 @@ import { volcanoEngine } from "@/lib/volcano-engine";
 import { ChatMessage } from "@/lib/volcano-engine/types";
 import { randomUUID } from "crypto";
 import { getOrCreateOwnedChatSession } from "@/lib/chat-session";
+import { createCreditCompensation } from "@/lib/credit-compensation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,73 +64,87 @@ export async function POST(req: NextRequest) {
       }, { status: 402 });
     }
 
-    // Save user message
-    const userMessageId = randomUUID();
-    await db.insert(chatMessage).values({
-      id: userMessageId,
-      sessionId: chatSessionId,
-      role: "user",
-      content: message,
-      creditsUsed: 10,
+    const compensation = createCreditCompensation({
+      userId,
+      amount: 10,
+      reason: "chat_usage_refund",
+      referenceId: chatSessionId,
     });
 
-    // Get chat history for context
-    const messages = await db
-      .select()
-      .from(chatMessage)
-      .where(eq(chatMessage.sessionId, chatSessionId))
-      .orderBy(chatMessage.createdAt)
-      .limit(20); // Keep last 20 messages for context
+    try {
+      // Save user message
+      const userMessageId = randomUUID();
+      await db.insert(chatMessage).values({
+        id: userMessageId,
+        sessionId: chatSessionId,
+        role: "user",
+        content: message,
+        creditsUsed: 10,
+      });
 
-    // Build conversation history for Volcano Engine
-    // Filter out the message we just inserted to avoid duplication
-    const chatMessages: ChatMessage[] = messages
-      .filter(m => m.id !== userMessageId)
-      .map(m => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-      }));
+      // Get chat history for context
+      const messages = await db
+        .select()
+        .from(chatMessage)
+        .where(eq(chatMessage.sessionId, chatSessionId))
+        .orderBy(chatMessage.createdAt)
+        .limit(20); // Keep last 20 messages for context
 
-    // Add the current message
-    chatMessages.push({
-      role: 'user',
-      content: message,
-    });
+      // Build conversation history for Volcano Engine
+      // Filter out the message we just inserted to avoid duplication
+      const chatMessages: ChatMessage[] = messages
+        .filter(m => m.id !== userMessageId)
+        .map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+        }));
 
-    // Call Volcano Engine API
-    const response = await volcanoEngine.createChatCompletion(chatMessages, {
-      temperature: 0.7,
-      top_p: 0.95,
-      max_tokens: 2048,
-    });
+      // Add the current message
+      chatMessages.push({
+        role: 'user',
+        content: message,
+      });
 
-    const text = response.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+      // Call Volcano Engine API
+      const response = await volcanoEngine.createChatCompletion(chatMessages, {
+        temperature: 0.7,
+        top_p: 0.95,
+        max_tokens: 2048,
+      });
 
-    // Save assistant message
-    const assistantMessageId = randomUUID();
-    await db.insert(chatMessage).values({
-      id: assistantMessageId,
-      sessionId: chatSessionId,
-      role: "assistant",
-      content: text,
-      creditsUsed: 0,
-    });
+      const text = response.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
 
-    // Update session
-    await db
-      .update(chatSession)
-      .set({
-        totalMessages: messages.length + 2,
-        totalCreditsUsed: (messages.filter(m => m.role === "user").length + 1) * 10,
-        lastMessageAt: new Date(),
-      })
-      .where(eq(chatSession.id, chatSessionId));
+      // Save assistant message
+      const assistantMessageId = randomUUID();
+      await db.insert(chatMessage).values({
+        id: assistantMessageId,
+        sessionId: chatSessionId,
+        role: "assistant",
+        content: text,
+        creditsUsed: 0,
+      });
 
-    return NextResponse.json({
-      sessionId: chatSessionId,
-      message: text,
-      remainingCredits: deductResult.remainingCredits,
-    });
+      // Update session
+      await db
+        .update(chatSession)
+        .set({
+          totalMessages: messages.length + 2,
+          totalCreditsUsed: (messages.filter(m => m.role === "user").length + 1) * 10,
+          lastMessageAt: new Date(),
+        })
+        .where(eq(chatSession.id, chatSessionId));
+
+      compensation.settle();
+
+      return NextResponse.json({
+        sessionId: chatSessionId,
+        message: text,
+        remainingCredits: deductResult.remainingCredits,
+      });
+    } catch (error) {
+      await compensation.compensate();
+      throw error;
+    }
 
   } catch (error: any) {
     console.error("Chat API error:", error);

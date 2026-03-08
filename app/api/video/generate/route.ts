@@ -9,6 +9,7 @@ import { canUserAfford, deductCredits } from "@/lib/credits";
 import { volcanoEngine } from "@/lib/volcano-engine";
 import { randomUUID } from "crypto";
 import { eq } from "drizzle-orm";
+import { createCreditCompensation } from "@/lib/credit-compensation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -70,6 +71,13 @@ export async function POST(req: NextRequest) {
       }, { status: 402 });
     }
 
+    const compensation = createCreditCompensation({
+      userId,
+      amount: creditsNeeded,
+      reason: "video_generation_refund",
+      referenceId: historyId,
+    });
+
     try {
       // Generate video
       let result;
@@ -99,6 +107,8 @@ export async function POST(req: NextRequest) {
         })
         .where(eq(generationHistory.id, historyId));
 
+      compensation.settle();
+
       return NextResponse.json({
         id: historyId,
         taskId: result.taskId,
@@ -107,6 +117,7 @@ export async function POST(req: NextRequest) {
       });
 
     } catch (genError: any) {
+      await compensation.compensate();
       // Update history to failed
       await db.update(generationHistory)
         .set({ 

@@ -8,6 +8,7 @@ import { volcanoEngine, parseSSEChunk } from "@/lib/volcano-engine";
 import { ChatMessage } from "@/lib/volcano-engine/types";
 import { randomUUID } from "crypto";
 import { getOrCreateOwnedChatSession } from "@/lib/chat-session";
+import { createCreditCompensation } from "@/lib/credit-compensation";
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,6 +75,13 @@ export async function POST(req: NextRequest) {
         headers: { 'Content-Type': 'application/json' }
       });
     }
+
+    const compensation = createCreditCompensation({
+      userId,
+      amount: 10,
+      reason: "chat_usage_refund",
+      referenceId: chatSessionId,
+    });
 
     // Save user message
     const userMessageId = randomUUID();
@@ -177,6 +185,8 @@ export async function POST(req: NextRequest) {
             })
             .where(eq(chatSession.id, chatSessionId));
 
+          compensation.settle();
+
           // Send completion signal
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
             type: 'done' 
@@ -185,6 +195,7 @@ export async function POST(req: NextRequest) {
           controller.close();
         } catch (error: any) {
           console.error("Stream error:", error);
+          await compensation.compensate();
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
             type: 'error',
             error: error.message || "Failed to process chat" 

@@ -65,6 +65,9 @@ export async function GET(req: NextRequest) {
           type = "usage";
           break;
         case "refund":
+        case "chat_usage_refund":
+        case "image_generation_refund":
+        case "video_generation_refund":
           type = "refund";
           break;
         case "adjustment":
