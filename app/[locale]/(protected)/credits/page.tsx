@@ -8,6 +8,7 @@ import { Button } from "@/components/button";
 import { Container } from "@/components/container";
 import { Background } from "@/components/background";
 import { motion } from "framer-motion";
+import { getDefaultOneTimePack } from "@/lib/billing-display";
 
 interface CreditRecord {
   id: string;
@@ -31,6 +32,7 @@ export default function CreditsPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 20;
+  const creditPack = getDefaultOneTimePack();
 
   // Fetch user profile with credits
   const fetchUserProfile = useCallback(async () => {
@@ -159,10 +161,10 @@ export default function CreditsPage() {
               <Button
                 variant="primary"
                 className="w-full justify-between"
-                onClick={() => startCheckout('pack_50')}
+                onClick={() => startCheckout(creditPack.key)}
               >
-                <span>50 {t('purchase.credits')}</span>
-                <span className="font-bold">$5</span>
+                <span>{creditPack.pack.credits} {t('purchase.credits')}</span>
+                <span className="font-bold">{creditPack.displayPrice}</span>
               </Button>
             </div>
           </div>
