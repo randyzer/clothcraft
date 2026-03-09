@@ -174,12 +174,12 @@
     "subtitle": "真实开发者与非技术背景创始人分享他们使用 Sistine 和 Vibe Coding 构建 AI SaaS 产品的经验。",
     "items": [
       {
-        "name": "Manu Arora",
+        "name": "Alex Chen",
         "quote": "我不是开发者，我是营销人员。但我使用 Sistine + Cursor 在 3 天内发布了我的 AI SaaS。现在每月收入 5000 美元。",
         "designation": "营销经理转型创始人"
       },
       {
-        "name": "Tyler Durden",
+        "name": "Jordan Lee",
         "quote": "我花了多年学习编码。现在我的非技术联合创始人使用 Vibe Coding 发布功能比我还快。这就是未来。",
         "designation": "技术联合创始人"
       },
@@ -257,7 +257,7 @@
   "gridFeatures": {
     "aiReady": {
       "title": "AI 就绪架构",
-      "description": "预配置的 OpenAI、Anthropic 和 Groq 集成。添加您的 API 密钥即可开始构建。"
+      "description": "预配置聊天、图像和视频生成工作流，默认接入 Volcano Engine。填好密钥即可开始构建。"
     },
     "creem": {
       "title": "Creem 支付",

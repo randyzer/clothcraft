@@ -110,7 +110,7 @@ export const Hero = () => {
         <div className="absolute inset-x-0 bottom-0 h-40 w-full bg-gradient-to-b from-transparent via-background to-background scale-[1.1] pointer-events-none" />
         <div className="p-2 bg-background border border-border rounded-[24px]">
           <Image
-            src="https://a.offerget.pro/starter/sample.png"
+            src="/starter/sample.png"
             alt="Product interface preview"
             width={1920}
             height={1080}
@@ -118,7 +118,7 @@ export const Hero = () => {
             priority
           />
           <Image
-            src="https://a.offerget.pro/starter/sampledark.png"
+            src="/starter/sampledark.png"
             alt="Product interface preview in dark mode"
             width={1920}
             height={1080}

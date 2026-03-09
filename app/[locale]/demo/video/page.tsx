@@ -46,13 +46,13 @@ interface GenerationResult {
   isPreset?: boolean;
 }
 
-// 预设视频数据 (从 R2 存储加载)
+// 预设视频数据 (从本地静态资源加载)
 const presetVideos: GenerationResult[] = [
   {
     id: "preset-video-1",
     type: "video",
     prompt: "a snow leopard is walking carefully, snowy landscape scene at twilight.",
-    resultUrl: "https://a.offerget.pro/starter/demo/videos/preset-snow-leopard.mp4",
+    resultUrl: "/starter/demo/videos/preset-snow-leopard.mp4",
     status: "completed",
     createdAt: new Date(),
     duration: 5,
@@ -63,7 +63,7 @@ const presetVideos: GenerationResult[] = [
     id: "preset-video-2",
     type: "video",
     prompt: "a dog speed climbs up a climbing wall at the olympics.",
-    resultUrl: "https://a.offerget.pro/starter/demo/videos/preset-dog-olympics.mp4",
+    resultUrl: "/starter/demo/videos/preset-dog-olympics.mp4",
     status: "completed",
     createdAt: new Date(),
     duration: 5,
@@ -74,7 +74,7 @@ const presetVideos: GenerationResult[] = [
     id: "preset-video-3",
     type: "video",
     prompt: "A pirate ship in a raging sea.",
-    resultUrl: "https://a.offerget.pro/starter/demo/videos/preset-pirate-ship.mp4",
+    resultUrl: "/starter/demo/videos/preset-pirate-ship.mp4",
     status: "completed",
     createdAt: new Date(),
     duration: 5,
@@ -85,7 +85,7 @@ const presetVideos: GenerationResult[] = [
     id: "preset-video-4",
     type: "video",
     prompt: "The sun rises slowly between tall buildings... Bicycle tires roll over a dew-covered street at dawn...",
-    resultUrl: "https://a.offerget.pro/starter/demo/videos/preset-sun-bicycle.mp4",
+    resultUrl: "/starter/demo/videos/preset-sun-bicycle.mp4",
     status: "completed",
     createdAt: new Date(),
     duration: 5,

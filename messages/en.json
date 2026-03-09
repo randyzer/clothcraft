@@ -174,12 +174,12 @@
     "subtitle": "Real developers and non-technical founders sharing their experience building AI SaaS products with Sistine and Vibe Coding.",
     "items": [
       {
-        "name": "Manu Arora",
+        "name": "Alex Chen",
         "quote": "I'm not a developer. I'm a marketer. But I shipped my AI SaaS in 3 days using Sistine + Cursor. Now making $5K MRR.",
         "designation": "Marketing Manager turned Founder"
       },
       {
-        "name": "Tyler Durden",
+        "name": "Jordan Lee",
         "quote": "Spent years learning to code. Now my non-technical co-founder ships features faster than me using Vibe Coding. This is the future.",
         "designation": "Technical Co-founder"
       },
@@ -257,7 +257,7 @@
   "gridFeatures": {
     "aiReady": {
       "title": "AI-Ready Architecture",
-      "description": "Pre-configured OpenAI, Anthropic, and Groq integrations. Add your API key and start building."
+      "description": "Pre-configured AI workflows for chat, image, and video generation, powered by Volcano Engine by default."
     },
     "creem": {
       "title": "Creem Payments",
@@ -316,7 +316,7 @@
     "signup": {
       "title": "Sign up for an account",
       "nameLabel": "Full name",
-      "namePlaceholder": "Manu Arora",
+      "namePlaceholder": "Alex Johnson",
       "emailLabel": "Email address",
       "emailPlaceholder": "hello@johndoe.com",
       "passwordLabel": "Password",
@@ -903,7 +903,7 @@
       "emailLabel": "Email address",
       "emailPlaceholder": "hello@johndoe.com",
       "companyLabel": "Company",
-      "companyPlaceholder": "Aceternity Labs, LLC",
+      "companyPlaceholder": "Your Company",
       "messageLabel": "Message",
       "messagePlaceholder": "Enter your message here",
       "submitButton": "Submit",
@@ -954,8 +954,8 @@
         "designation": "UX Designer"
       },
       {
-        "name": "Tyler Durden",
-        "designation": "Soap Developer"
+        "name": "Taylor Brooks",
+        "designation": "Full-Stack Developer"
       },
       {
         "name": "Dora",

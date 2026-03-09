@@ -40,7 +40,7 @@ With Sistine Starter, you can:
 #### 🤖 AI-Optimized Architecture
 - Pre-configured for **Cursor**, **Claude Code**, and **Windsurf**
 - Every component structured for AI understanding
-- Google Gemini AI integration ready
+- Volcano Engine chat, image, and video generation integrated
 - Optimized file structure for AI modifications
 
 #### 🎨 Modern Tech Stack
@@ -104,7 +104,8 @@ CREEM_API_KEY="your-creem-api-key"
 CREEM_WEBHOOK_SECRET="whsec_..."
 
 # AI Providers (Optional)
-GOOGLE_GENERATIVE_AI_API_KEY="your-gemini-api-key"
+VOLCANO_ENGINE_API_KEY="your-volcano-engine-api-key"
+VOLCANO_ENGINE_API_URL="https://ark.cn-beijing.volces.com/api/v3"
 ```
 
 4. **Set up the database**
@@ -144,11 +145,11 @@ Open [http://localhost:3000](http://localhost:3000) to see your app!
 
 ### 📚 Documentation
 
-- [Project Structure](./docs/structure.md)
-- [Authentication Guide](./docs/auth.md)
-- [Database Schema](./docs/database.md)
-- [Deployment Guide](./docs/deployment.md)
-- [AI Assistant Tips](./docs/ai-tips.md)
+- [Repository guide](./AGENTS.md)
+- [Database schema](./lib/db/schema.ts)
+- [Billing config](./constants/billing.ts)
+- [Creem integration](./lib/payments/creem.ts)
+- [Volcano Engine integration](./lib/volcano-engine/index.ts)
 
 ### 🛠 Available Scripts
 
@@ -205,7 +206,7 @@ MIT License - see [LICENSE](./LICENSE) for details.
 #### 🤖 AI 优化架构
 - 为 **Cursor**、**Claude Code** 和 **Windsurf** 预配置
 - 每个组件都为 AI 理解而结构化
-- Google Gemini AI 集成就绪
+- 已集成 Volcano Engine 对话、图像与视频能力
 - 为 AI 修改优化的文件结构
 
 #### 🎨 现代技术栈
@@ -303,11 +304,11 @@ pnpm dev
 
 ### 📚 文档
 
-- [项目结构](./docs/structure.md)
-- [认证指南](./docs/auth.md)
-- [数据库架构](./docs/database.md)
-- [部署指南](./docs/deployment.md)
-- [AI 助手技巧](./docs/ai-tips.md)
+- [仓库指南](./AGENTS.md)
+- [数据库 Schema](./lib/db/schema.ts)
+- [计费配置](./constants/billing.ts)
+- [Creem 集成](./lib/payments/creem.ts)
+- [Volcano Engine 集成](./lib/volcano-engine/index.ts)
 
 ### 🛠 可用脚本
 

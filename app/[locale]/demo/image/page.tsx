@@ -42,13 +42,13 @@ interface GenerationResult {
   sourceImageUrl?: string;
 }
 
-// 预设图片数据 (从 R2 存储加载)
+// 预设图片数据 (从本地静态资源加载)
 const presetImages: GenerationResult[] = [
   {
     id: "preset-img-1",
     type: "image",
     prompt: "A majestic lion with a flowing mane, bathed in golden sunset light, photorealistic style",
-    resultUrl: "https://a.offerget.pro/starter/demo/images/preset-lion-sunset.jpg",
+    resultUrl: "/starter/demo/images/preset-lion-sunset.jpg",
     status: "completed",
     createdAt: new Date(),
     size: "2K",
@@ -58,7 +58,7 @@ const presetImages: GenerationResult[] = [
     id: "preset-img-2",
     type: "image",
     prompt: "Futuristic cityscape with neon lights reflecting on wet streets, cyberpunk aesthetic",
-    resultUrl: "https://a.offerget.pro/starter/demo/images/preset-cyberpunk-city.jpg",
+    resultUrl: "/starter/demo/images/preset-cyberpunk-city.jpg",
     status: "completed",
     createdAt: new Date(),
     size: "2K",
@@ -68,7 +68,7 @@ const presetImages: GenerationResult[] = [
     id: "preset-img-3",
     type: "image",
     prompt: "A serene Japanese garden with cherry blossoms and a traditional bridge over a koi pond",
-    resultUrl: "https://a.offerget.pro/starter/demo/images/preset-japanese-garden.jpg",
+    resultUrl: "/starter/demo/images/preset-japanese-garden.jpg",
     status: "completed",
     createdAt: new Date(),
     size: "2K",
@@ -78,7 +78,7 @@ const presetImages: GenerationResult[] = [
     id: "preset-img-4",
     type: "image",
     prompt: "Abstract colorful paint explosion, vibrant colors mixing in mid-air",
-    resultUrl: "https://a.offerget.pro/starter/demo/images/preset-paint-explosion.jpg",
+    resultUrl: "/starter/demo/images/preset-paint-explosion.jpg",
     status: "completed",
     createdAt: new Date(),
     size: "2K",
@@ -88,7 +88,7 @@ const presetImages: GenerationResult[] = [
     id: "preset-img-5",
     type: "image",
     prompt: "A mystical forest path with glowing mushrooms and fireflies, fantasy art style",
-    resultUrl: "https://a.offerget.pro/starter/demo/images/preset-mystical-forest.jpg",
+    resultUrl: "/starter/demo/images/preset-mystical-forest.jpg",
     status: "completed",
     createdAt: new Date(),
     size: "2K",
@@ -98,7 +98,7 @@ const presetImages: GenerationResult[] = [
     id: "preset-img-6",
     type: "image",
     prompt: "A steampunk airship floating above Victorian London, detailed mechanical elements",
-    resultUrl: "https://a.offerget.pro/starter/demo/images/preset-steampunk-airship.jpg",
+    resultUrl: "/starter/demo/images/preset-steampunk-airship.jpg",
     status: "completed",
     createdAt: new Date(),
     size: "2K",

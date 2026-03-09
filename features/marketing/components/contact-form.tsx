@@ -13,30 +13,22 @@ import {
 import { ContactInput, contactSchema } from "@/features/marketing/schemas";
 import {
   IconBrandGithub,
-  IconBrandLinkedin,
   IconBrandX,
 } from "@tabler/icons-react";
 
 const socials = [
   {
     title: "twitter",
-    href: "https://twitter.com/mannupaaji",
+    href: "https://x.com/bourneliu66",
     icon: (
       <IconBrandX className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground" />
     ),
   },
   {
     title: "github",
-    href: "https://github.com/manuarora700",
+    href: "https://github.com/Idea-To-Business/sistine-starter-vibe-to-production",
     icon: (
       <IconBrandGithub className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground" />
-    ),
-  },
-  {
-    title: "linkedin",
-    href: "https://linkedin.com/manuarora28",
-    icon: (
-      <IconBrandLinkedin className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground" />
     ),
   },
 ];
@@ -70,7 +62,13 @@ export function ContactForm() {
       footer={
         <div className="flex items-center justify-center space-x-4 pt-4">
           {socials.map((social) => (
-            <Link href={social.href} key={social.title} className="inline-flex items-center justify-center">
+            <Link
+              href={social.href}
+              key={social.title}
+              className="inline-flex items-center justify-center"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {social.icon}
             </Link>
           ))}
