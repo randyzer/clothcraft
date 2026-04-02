@@ -9,7 +9,6 @@ import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import type { NavigationItem } from "@/features/navigation/types";
 import { marketingNavigationKeys } from "@/features/navigation/config";
 
 import { NavBarItem } from "./navbar-item";
@@ -59,14 +58,14 @@ export const DesktopNavbar = () => {
             item.subItems ? (
               <NavBarItemWithDropdown 
                 key={item.key}
-                itemKey={item.key}
                 href={item.href}
+                target={item.target}
                 subItems={item.subItems}
               >
                 {t(item.key)}
               </NavBarItemWithDropdown>
             ) : (
-              <NavBarItem href={item.href} key={item.key}>
+              <NavBarItem href={item.href} key={item.key} target={item.target}>
                 {t(item.key)}
               </NavBarItem>
             )

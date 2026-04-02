@@ -39,6 +39,7 @@
       "pricing": "Pricing",
       "blog": "Blog",
       "contact": "Contact",
+      "docs": "Docs",
       "dashboard": "Dashboard",
       "demo": "Demo",
       "chat": "Chat",
@@ -69,6 +70,15 @@
     "cta": {
       "primary": "View Docs",
       "secondary": "Get Code"
+    },
+    "modal": {
+      "eyebrow": "Code Access",
+      "title": "Get the source code from our course community",
+      "description": "The full Sistine Starter codebase, update notes, and companion materials are distributed inside our course community.",
+      "instruction": "If you're enrolled, open the course page below in a new tab to access the code, updates, and course resources.",
+      "linkLabel": "Open the course community",
+      "linkHint": "Course community: https://scys.com/deepsea/2001/course",
+      "close": "Close"
     }
   },
   "features": {

@@ -7,8 +7,8 @@ vi.mock("next-intl", () => ({
   useLocale: () => useLocaleMock(),
 }));
 
-vi.mock("next-view-transitions", () => ({
-  Link: ({
+vi.mock("next/link", () => ({
+  default: ({
     href,
     children,
     ...props
@@ -48,6 +48,27 @@ describe("LocaleLink", () => {
     expect(screen.getByRole("link", { name: "External" })).toHaveAttribute(
       "href",
       "https://mksaas.com"
+    );
+  });
+
+  it("passes new-tab attributes through to the rendered link", () => {
+    render(
+      <LocaleLink href="/docs" target="_blank" rel="noopener noreferrer">
+        Docs
+      </LocaleLink>
+    );
+
+    expect(screen.getByRole("link", { name: "Docs" })).toHaveAttribute(
+      "href",
+      "/en/docs"
+    );
+    expect(screen.getByRole("link", { name: "Docs" })).toHaveAttribute(
+      "target",
+      "_blank"
+    );
+    expect(screen.getByRole("link", { name: "Docs" })).toHaveAttribute(
+      "rel",
+      "noopener noreferrer"
     );
   });
 });

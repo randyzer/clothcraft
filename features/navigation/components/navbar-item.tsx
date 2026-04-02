@@ -32,6 +32,7 @@ export function NavBarItem({
         className
       )}
       target={target}
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
     >
       {children}
     </LocaleLink>

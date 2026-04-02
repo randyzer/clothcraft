@@ -14,8 +14,8 @@ interface SubItem {
 }
 
 interface NavBarItemWithDropdownProps {
-  itemKey: string;
   href: string;
+  target?: "_blank";
   subItems?: SubItem[];
   children: React.ReactNode;
 }
@@ -27,15 +27,15 @@ const iconMap = {
 };
 
 export function NavBarItemWithDropdown({
-  itemKey,
   href,
+  target,
   subItems,
   children
 }: NavBarItemWithDropdownProps) {
   const t = useTranslations('navigation.main');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     return () => {
@@ -62,6 +62,8 @@ export function NavBarItemWithDropdown({
     return (
       <Link
         href={href}
+        target={target}
+        rel={target === "_blank" ? "noopener noreferrer" : undefined}
         className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-hover transition-colors"
       >
         {children}

@@ -39,6 +39,7 @@
       "pricing": "定价",
       "blog": "博客",
       "contact": "联系我们",
+      "docs": "文档",
       "dashboard": "仪表盘",
       "demo": "Demo",
       "chat": "对话",
@@ -69,6 +70,15 @@
     "cta": {
       "primary": "查看文档",
       "secondary": "获取代码"
+    },
+    "modal": {
+      "eyebrow": "源码获取",
+      "title": "请在课程社区获取源码",
+      "description": "Sistine Starter 的完整源码、更新说明和配套资料都放在课程社区里统一发放。",
+      "instruction": "如果你已经加入课程，点击下方链接即可在新窗口打开课程社区，获取代码与相关资料。",
+      "linkLabel": "前往课程社区",
+      "linkHint": "课程社区：https://scys.com/deepsea/2001/course",
+      "close": "关闭"
     }
   },
   "features": {
