@@ -1,0 +1,73 @@
+---
+title: 快速开始
+description: 几分钟内启动你的 Sistine Starter 项目。
+---
+
+## 前提条件
+
+- Node.js 20.9+
+- pnpm 10+
+- PostgreSQL 数据库（推荐 Supabase、Neon 或 Vercel Postgres）
+
+## 安装步骤
+
+### 1. 克隆并安装依赖
+
+```bash
+git clone https://github.com/liuxiaopai-ai/sistine-starter-vibe-to-production.git
+cd sistine-starter-vibe-to-production
+pnpm install
+```
+
+### 2. 配置环境变量
+
+复制示例环境文件并填入你的配置：
+
+```bash
+cp .env.example .env
+```
+
+最少需要以下配置：
+
+```ini
+DATABASE_URL="postgresql://user:password@host/db?sslmode=require"
+BETTER_AUTH_SECRET="至少32字符的随机密钥"
+BETTER_AUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+完整列表请查看[环境变量](./environment)。
+
+### 3. 初始化数据库
+
+```bash
+pnpm db:push
+```
+
+生产环境建议使用迁移：
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+```
+
+### 4. 创建管理员账户
+
+```bash
+pnpm admin:setup
+```
+
+### 5. 启动开发服务器
+
+```bash
+pnpm dev
+```
+
+访问 `http://localhost:3000` 查看你的应用。
+
+## 下一步
+
+- [项目结构](./project-structure) — 了解代码布局
+- [认证系统](./auth) — 配置登录方式
+- [支付系统](./payments) — 设置计费和订阅
+- [AI 功能](./ai) — 配置 AI 集成

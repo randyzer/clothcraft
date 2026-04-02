@@ -1,7 +1,13 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type { Config } from "tailwindcss";
 const {
   default: flattenColorPalette,
 } = require("tailwindcss/lib/util/flattenColorPalette");
+
+type TailwindPluginApi = {
+  addBase: (base: Record<string, Record<string, string>>) => void;
+  theme: (path: "colors") => Record<string, unknown>;
+};
 
 const config: Config = {
   content: [
@@ -9,6 +15,8 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./layouts/**/*.{js,ts,jsx,tsx,mdx}",
+    "./content/**/*.{md,mdx}",
+    "./mdx-components.tsx",
   ],
   darkMode: "class",
   theme: {
@@ -98,10 +106,10 @@ const config: Config = {
   plugins: [addVariablesForColors, require("@tailwindcss/typography")],
 };
 
-function addVariablesForColors({ addBase, theme }: any) {
-  let allColors = flattenColorPalette(theme("colors"));
-  let newVars = Object.fromEntries(
-    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+function addVariablesForColors({ addBase, theme }: TailwindPluginApi) {
+  const allColors = flattenColorPalette(theme("colors"));
+  const newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, String(val)])
   );
 
   addBase({

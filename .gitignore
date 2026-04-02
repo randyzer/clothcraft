@@ -56,5 +56,9 @@ Desktop.ini
 # local documentation
 .local-docs/
 
+# fumadocs generated
+.source/
+public/fumadocs-style.css
+
 # scripts
 /scripts/manage-users.ts
