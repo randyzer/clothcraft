@@ -29,8 +29,8 @@ Optimize changes for two goals at the same time:
 
 ## Stack Snapshot
 
-- Framework: Next.js 14.2.3 App Router
-- React: 18
+- Framework: Next.js 16.2.2 App Router
+- React: 19
 - Language: TypeScript with strict mode
 - Styling: Tailwind CSS + Framer Motion
 - Auth: Better Auth + Drizzle adapter
@@ -75,10 +75,13 @@ Optimize changes for two goals at the same time:
 ### Config and content
 
 - `constants/billing.ts`: all plan keys, pack keys, prices, and Creem product IDs
+- `constants/website.ts`: shared app/docs name and public URL config
 - `messages/en.json`, `messages/zh.json`: user-facing translations
 - `messages/seo.en.json`, `messages/seo.zh.json`: SEO translations
 - `app/[locale]/(marketing)/blog/*/*.mdx`: blog content
+- `content/docs/**/*.mdx`: source content for the built-in Fumadocs docs site
 - `lib/blog-manifest.generated.ts`: generated file, do not edit by hand
+- `public/fumadocs-style.css`: generated stylesheet synced from `fumadocs-ui`
 - `public/starter`: local demo assets used by marketing and demo pages
 - `.asset-sources/starter-demo`: source stills used to generate local demo videos
 
@@ -86,6 +89,7 @@ Optimize changes for two goals at the same time:
 
 ```bash
 pnpm dev
+pnpm dev:webpack
 pnpm lint
 pnpm test
 pnpm build
@@ -99,8 +103,9 @@ pnpm generate:blog-manifest
 
 Notes:
 
-- `pnpm dev` runs `scripts/run-dev.mjs`, which only launches Next dev with a cleaned environment. It does not regenerate the blog manifest.
-- `pnpm build` does run `generate:blog-manifest` before building.
+- `pnpm dev` runs `scripts/run-dev.mjs`, which launches Next dev with a cleaned environment and syncs the Fumadocs stylesheet first. It does not regenerate the blog manifest.
+- `pnpm dev:webpack` is the safe fallback if Turbopack is too heavy on the current machine.
+- `pnpm build` runs both `sync:fumadocs-style` and `generate:blog-manifest` before building.
 - If you add, rename, or remove blog posts, regenerate the blog manifest before committing.
 
 ## Environment Variables
@@ -126,8 +131,8 @@ The important groups are:
 - Better Auth is configured in `lib/auth.ts`.
 - New signups receive a 300 credit registration bonus in the auth hook.
 - If you change signup behavior, preserve the registration bonus flow unless the product decision explicitly changes it.
-- Google OAuth is not truly optional in the current server config: `lib/auth.ts` always registers the Google provider, so missing env vars cause warnings.
-- If you make Google auth optional, update both server config and client UI together.
+- Google OAuth is optional now. It is enabled only when both `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` are present.
+- The login and signup forms should stay in sync with the server config: if the provider is disabled, the Google button should not render.
 
 ### 2. Credits and ledger integrity
 
@@ -172,14 +177,22 @@ Important behavior:
 ### 6. i18n
 
 - Locales are defined in `i18n.config.ts`.
-- Middleware locale handling is in `middleware.ts`.
+- Locale routing is handled by `proxy.ts`.
 - Translation loading is in `lib/i18n.ts`.
+- The app URL strategy is `as-needed`, so default-locale routes use `/docs`, `/pricing`, etc. rather than `/en/...`.
 - When changing user-facing copy, update both English and Chinese unless the task explicitly says otherwise.
 - If you change SEO copy, update `messages/seo.en.json` and `messages/seo.zh.json` too.
 
+### 7. Docs site
+
+- The product ships an integrated docs site at `/docs` and `/zh/docs`.
+- Docs content lives in `content/docs/**/*.mdx`.
+- Docs routing and rendering live in `app/[locale]/docs/*`.
+- `lib/source.ts` reads from generated `.source/*` output created by `fumadocs-mdx`.
+- `public/fumadocs-style.css` is generated. Do not hand-edit it; update the sync script or upstream dependency instead.
+
 ## Current Known Gotchas
 
-- `lib/i18n.ts` logs locale loading loudly during build and runtime. This is expected right now, but it makes build output noisy.
 - Some API routes still emit known dynamic server usage warnings during `pnpm build`, especially:
   - `/api/auth/verify-email`
   - `/api/auth/verify-reset-token`
@@ -187,9 +200,10 @@ Important behavior:
   - `/api/user/admin-status`
   - `/api/user/credits/history`
 - If you touch routes that read `request.url`, `headers`, cookies, or auth state, consider explicitly marking them dynamic.
-- `features/auth/components/social-auth-buttons.tsx` always renders the Google button. Keep this in mind when changing optional auth behavior.
 - `app/api/upload/simple/route.ts` is demo-oriented and not the main production upload path.
 - Demo assets were intentionally localized into `public/starter`. Do not switch them back to `offerget` or other third-party runtime URLs.
+- Fumadocs ships Tailwind v4-oriented CSS, so the repo deliberately syncs that stylesheet into `public/` and loads it via `<link>` to avoid Tailwind v3/PostCSS conflicts.
+- Turbopack can still feel heavy on some macOS setups. Prefer `pnpm dev:webpack` if local development becomes sluggish.
 
 ## Testing Expectations
 

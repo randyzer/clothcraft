@@ -44,7 +44,7 @@ With Sistine Starter, you can:
 - Optimized file structure for AI modifications
 
 #### 🎨 Modern Tech Stack
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
 - **UI Components**: shadcn/ui - Beautiful, customizable components
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Better Auth - Simple, secure, and scalable
@@ -55,7 +55,7 @@ With Sistine Starter, you can:
 - Configure per-plan credit schedules via `constants/billing.ts`
 - Annual plans can drip credits monthly using the built-in schedule utilities
 - Secure cron endpoint at `/api/cron/subscription-grants` (basic auth via `CRON_JOBS_USERNAME/CRON_JOBS_PASSWORD` or bearer token)
-- Detailed guide in `docs/billing-credits.md` (copy to your repo if `.gitignore` excludes docs)
+- Built-in docs live at `/docs` (English) and `/zh/docs` (中文)
 
 ### 🚀 Quick Start
 
@@ -66,9 +66,11 @@ With Sistine Starter, you can:
 
 #### Get Access
 
-**申请 GitHub 仓库权限**: [https://applysistine.vercel.app/](https://applysistine.vercel.app/)
+Get the starter through the course community:
 
-获得权限后，按照以下步骤开始：
+- https://scys.com/deepsea/2001/course
+
+After you receive access, continue with the setup below.
 
 #### Installation
 
@@ -81,8 +83,6 @@ cd sistine-starter-vibe-to-production
 2. **Install dependencies**
 ```bash
 pnpm install
-# or
-npm install
 ```
 
 3. **Set up environment variables**
@@ -116,6 +116,8 @@ pnpm db:push
 5. **Start the development server**
 ```bash
 pnpm dev
+# or fall back to webpack on slower machines
+pnpm dev:webpack
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see your app!
@@ -145,6 +147,7 @@ Open [http://localhost:3000](http://localhost:3000) to see your app!
 
 ### 📚 Documentation
 
+- Docs site: `/docs` (English), `/zh/docs` (中文)
 - [Repository guide](./AGENTS.md)
 - [Database schema](./lib/db/schema.ts)
 - [Billing config](./constants/billing.ts)
@@ -155,6 +158,7 @@ Open [http://localhost:3000](http://localhost:3000) to see your app!
 
 ```bash
 pnpm dev          # Start development server
+pnpm dev:webpack  # Start dev server with webpack fallback
 pnpm build        # Build for production
 pnpm start        # Start production server
 pnpm lint         # Run ESLint
@@ -173,7 +177,7 @@ pnpm db:studio    # Open Drizzle Studio
 
 ### 🤝 Contributing
 
-We love contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+We welcome improvements and bug reports. Open an issue or PR, and keep `README.md`, `AGENTS.md`, and the built-in docs in sync with the code.
 
 ### 📄 License
 
@@ -210,7 +214,7 @@ MIT License - see [LICENSE](./LICENSE) for details.
 - 为 AI 修改优化的文件结构
 
 #### 🎨 现代技术栈
-- **前端**：Next.js 14、TypeScript、Tailwind CSS
+- **前端**：Next.js 16、React 19、TypeScript、Tailwind CSS
 - **UI 组件**：shadcn/ui - 美观、可定制的组件
 - **数据库**：PostgreSQL 配合 Drizzle ORM
 - **认证**：Better Auth - 简单、安全、可扩展
@@ -226,9 +230,11 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 #### 获取访问权限
 
-**申请 GitHub 仓库权限**: [https://applysistine.vercel.app/](https://applysistine.vercel.app/)
+请在课程社区获取源码和访问方式：
 
-获得权限后，按照以下步骤开始：
+- https://scys.com/deepsea/2001/course
+
+拿到访问权限后，再按下面步骤初始化项目。
 
 #### 安装步骤
 
@@ -241,8 +247,6 @@ cd sistine-starter-vibe-to-production
 2. **安装依赖**
 ```bash
 pnpm install
-# 或
-npm install
 ```
 
 3. **设置环境变量**
@@ -264,7 +268,8 @@ CREEM_API_KEY="your-creem-api-key"
 CREEM_WEBHOOK_SECRET="whsec_..."
 
 # AI 提供商（可选）
-GOOGLE_GENERATIVE_AI_API_KEY="your-gemini-api-key"
+VOLCANO_ENGINE_API_KEY="your-volcano-engine-api-key"
+VOLCANO_ENGINE_API_URL="https://ark.cn-beijing.volces.com/api/v3"
 ```
 
 4. **设置数据库**
@@ -275,6 +280,8 @@ pnpm db:push
 5. **启动开发服务器**
 ```bash
 pnpm dev
+# 如果 Turbopack 在你的机器上偏重，可以改用：
+pnpm dev:webpack
 ```
 
 打开 [http://localhost:3000](http://localhost:3000) 查看你的应用！
@@ -304,6 +311,7 @@ pnpm dev
 
 ### 📚 文档
 
+- 文档站点：`/docs`（英文）、`/zh/docs`（中文）
 - [仓库指南](./AGENTS.md)
 - [数据库 Schema](./lib/db/schema.ts)
 - [计费配置](./constants/billing.ts)
@@ -314,6 +322,7 @@ pnpm dev
 
 ```bash
 pnpm dev          # 启动开发服务器
+pnpm dev:webpack  # 使用 webpack 作为开发兜底
 pnpm build        # 构建生产版本
 pnpm start        # 启动生产服务器
 pnpm lint         # 运行 ESLint
@@ -332,7 +341,7 @@ pnpm db:studio    # 打开 Drizzle Studio
 
 ### 🤝 贡献
 
-我们欢迎贡献！详情请查看 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+欢迎提交改进和问题反馈。发起 Issue 或 PR 时，请同时确保 `README.md`、`AGENTS.md` 和内置文档与代码保持同步。
 
 ### 📄 许可证
 
