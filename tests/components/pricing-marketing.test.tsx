@@ -63,13 +63,14 @@ vi.mock("framer-motion", () => ({
   motion: {
     span: ({
       children,
-      layoutId: _layoutId,
+      layoutId,
       ...props
     }: React.PropsWithChildren<
       React.HTMLAttributes<HTMLSpanElement> & { layoutId?: string }
-    >) => (
-      <span {...props}>{children}</span>
-    ),
+    >) => {
+      void layoutId;
+      return <span {...props}>{children}</span>;
+    },
   },
 }));
 

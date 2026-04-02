@@ -43,7 +43,7 @@ export function EmailVerifiedGuard({
       } else {
         setResendMessage(t('resendError'));
       }
-    } catch (error) {
+    } catch {
       setResendMessage(t('resendError'));
     } finally {
       setIsResending(false);

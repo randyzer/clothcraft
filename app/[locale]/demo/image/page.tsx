@@ -8,6 +8,13 @@ import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/button";
 import { Background } from "@/components/background";
 import { createImageGenerationPayload } from "@/lib/image-generation";
+import type {
+  ApiErrorResponse,
+  ImageGenerationResponsePayload,
+  UploadImageResponse,
+  UserProfileResponse,
+} from "@/lib/client-api";
+import { getApiErrorMessage, getErrorMessage } from "@/lib/error-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, 
@@ -147,7 +154,7 @@ export default function ImagePage() {
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as UserProfileResponse;
         setRemainingCredits(data.user.credits);
       } else if (response.status === 401 || response.status === 403) {
         setRemainingCredits(null);
@@ -246,16 +253,16 @@ export default function ImagePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Upload failed"));
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as UploadImageResponse;
       setReferenceImageUrl(data.url);
       setReferenceImageName(data.filename || file.name);
-    } catch (uploadError: any) {
+    } catch (uploadError: unknown) {
       console.error('Error uploading reference image:', uploadError);
-      setError(uploadError.message || t('image.errors.uploadFailed'));
+      setError(getErrorMessage(uploadError, t('image.errors.uploadFailed')));
     } finally {
       setIsUploadingImage(false);
       event.target.value = '';
@@ -318,11 +325,11 @@ export default function ImagePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate image");
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Failed to generate image"));
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as ImageGenerationResponsePayload;
       
       const newImage: GenerationResult = {
         id: data.id,
@@ -341,11 +348,12 @@ export default function ImagePage() {
       setRemainingCredits(data.remainingCredits);
       setImagePrompt("");
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error generating image:", error);
-      setError(error.message);
+      const message = getErrorMessage(error, "Failed to generate image");
+      setError(message);
       
-      if (error.message?.includes("credits")) {
+      if (message.includes("credits")) {
         setError(t('insufficientCredits'));
       }
       // 出错时恢复预设图片

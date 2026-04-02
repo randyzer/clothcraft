@@ -1,9 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Image from "next/image";
-import { useId } from "react";
-import { motion } from "framer-motion";
 import { HorizontalGradient } from "@/components/horizontal-gradient";
 import { FeaturedTestimonials } from "@/components/featured-testimonials";
 import { useTranslations } from 'next-intl';

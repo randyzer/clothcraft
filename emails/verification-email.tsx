@@ -19,7 +19,6 @@ interface VerificationEmailProps {
 
 export const VerificationEmail = ({
   verificationUrl,
-  userEmail,
 }: VerificationEmailProps) => {
   return (
     <Html>
@@ -48,7 +47,7 @@ export const VerificationEmail = ({
           </Link>
 
           <Text style={footer}>
-            If you didn't sign up for Sistine AI, you can safely ignore this email.
+            If you didn&apos;t sign up for Sistine AI, you can safely ignore this email.
           </Text>
         </Container>
       </Body>

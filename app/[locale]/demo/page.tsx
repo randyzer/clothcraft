@@ -10,6 +10,16 @@ import { Container } from "@/components/container";
 import { Background } from "@/components/background";
 import { MarkdownMessage } from "@/components/markdown-message";
 import { createImageGenerationPayload } from "@/lib/image-generation";
+import type {
+  ApiErrorResponse,
+  ChatStreamEvent,
+  ImageGenerationResponsePayload,
+  UploadImageResponse,
+  UserProfileResponse,
+  VideoGenerationResponsePayload,
+  VideoStatusResponsePayload,
+} from "@/lib/client-api";
+import { getApiErrorMessage, getErrorMessage } from "@/lib/error-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Send, 
@@ -105,7 +115,7 @@ export default function DemoPage() {
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as UserProfileResponse;
         setRemainingCredits(data.user.credits);
       } else if (response.status === 401 || response.status === 403) {
         setRemainingCredits(null);
@@ -163,8 +173,8 @@ export default function DemoPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send message");
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Failed to send message"));
       }
 
       const reader = response.body?.getReader();
@@ -186,7 +196,7 @@ export default function DemoPage() {
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             try {
-              const data = JSON.parse(line.slice(6));
+              const data = JSON.parse(line.slice(6)) as ChatStreamEvent;
               
               if (data.type === "metadata") {
                 setChatSessionId(data.sessionId);
@@ -207,18 +217,19 @@ export default function DemoPage() {
               } else if (data.type === "error") {
                 throw new Error(data.error);
               }
-            } catch (e) {
+            } catch {
               // Ignore parsing errors for incomplete chunks
             }
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending message:", error);
-      setError(error.message);
+      const message = getErrorMessage(error, "Failed to send message");
+      setError(message);
       setMessages(prev => prev.filter(msg => msg.id !== assistantMessageId));
       
-      if (error.message?.includes("credits")) {
+      if (message.includes("credits")) {
         setError(t('insufficientCredits'));
       }
     } finally {
@@ -260,11 +271,11 @@ export default function DemoPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate image");
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Failed to generate image"));
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as ImageGenerationResponsePayload;
       
       const newImage: GenerationResult = {
         id: data.id,
@@ -279,11 +290,12 @@ export default function DemoPage() {
       setRemainingCredits(data.remainingCredits);
       setImagePrompt("");
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error generating image:", error);
-      setError(error.message);
+      const message = getErrorMessage(error, "Failed to generate image");
+      setError(message);
       
-      if (error.message?.includes("credits")) {
+      if (message.includes("credits")) {
         setError(t('insufficientCredits'));
       }
     } finally {
@@ -330,16 +342,16 @@ export default function DemoPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Upload failed");
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Upload failed"));
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as UploadImageResponse;
       setReferenceImageUrl(data.url);
       setReferenceImageName(data.filename || file.name);
-    } catch (uploadError: any) {
+    } catch (uploadError: unknown) {
       console.error("Error uploading reference image:", uploadError);
-      setError(uploadError.message || t("image.errors.uploadFailed"));
+      setError(getErrorMessage(uploadError, t("image.errors.uploadFailed")));
     } finally {
       setIsUploadingReferenceImage(false);
       e.target.value = "";
@@ -380,11 +392,11 @@ export default function DemoPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate video");
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Failed to generate video"));
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as VideoGenerationResponsePayload;
       
       const newVideo: GenerationResult = {
         id: data.id,
@@ -403,11 +415,12 @@ export default function DemoPage() {
       // Start polling for video status
       pollVideoStatus(data.id, data.taskId);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error generating video:", error);
-      setError(error.message);
+      const message = getErrorMessage(error, "Failed to generate video");
+      setError(message);
       
-      if (error.message?.includes("credits")) {
+      if (message.includes("credits")) {
         setError(t('insufficientCredits'));
       }
     } finally {
@@ -429,7 +442,7 @@ export default function DemoPage() {
           throw new Error("Failed to check video status");
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as VideoStatusResponsePayload;
 
         setGeneratedVideos(prev => prev.map(video => 
           video.id === historyId
@@ -475,16 +488,16 @@ export default function DemoPage() {
         });
         
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          const error = (await response.json()) as ApiErrorResponse;
+          throw new Error(getApiErrorMessage(error, "Upload failed"));
         }
         
-        const data = await response.json();
+        const data = (await response.json()) as UploadImageResponse;
         setUploadedImageUrl(data.url);
         console.log('Image uploaded:', data.url);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Upload error:', error);
-        setError(error.message || 'Failed to upload image');
+        setError(getErrorMessage(error, 'Failed to upload image'));
       } finally {
         setIsGeneratingVideo(false);
       }

@@ -3,7 +3,7 @@ import React, { forwardRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-interface PasswordProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+type PasswordProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const Password = forwardRef<HTMLInputElement, PasswordProps>(
   ({ className, type, ...props }, ref) => {

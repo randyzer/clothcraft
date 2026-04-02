@@ -10,6 +10,7 @@ import { randomUUID } from "crypto";
 import { eq } from "drizzle-orm";
 import { createCreditCompensation } from "@/lib/credit-compensation";
 import { getActiveSessionUser } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/error-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -113,13 +114,13 @@ export async function POST(req: NextRequest) {
         remainingCredits: deductResult.remainingCredits,
       });
 
-    } catch (genError: any) {
+    } catch (genError: unknown) {
       await compensation.compensate();
       // Update history to failed
       await db.update(generationHistory)
         .set({ 
           status: "failed", 
-          error: genError.message,
+          error: getErrorMessage(genError, "Failed to generate video"),
           updatedAt: new Date(),
         })
         .where(eq(generationHistory.id, historyId));
@@ -127,10 +128,10 @@ export async function POST(req: NextRequest) {
       throw genError;
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Video generation API error:", error);
     return NextResponse.json({ 
-      error: error.message || "Failed to generate video" 
+      error: getErrorMessage(error, "Failed to generate video"),
     }, { status: 500 });
   }
 }

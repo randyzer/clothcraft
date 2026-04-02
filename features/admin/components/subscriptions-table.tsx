@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   ShoppingCart,
   Search,
-  Calendar,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Clock,
 } from "lucide-react";
 
 interface Subscription {
@@ -35,17 +33,17 @@ interface SubscriptionsTableProps {
 }
 
 export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats }: SubscriptionsTableProps) {
-  const [subscriptions] = useState(initialSubscriptions);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [subscriptionPage, setSubscriptionPage] = useState(1);
   const t = useTranslations("Admin.subscriptions");
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-  const filteredSubscriptions = subscriptions.filter((sub) => {
+  const filteredSubscriptions = initialSubscriptions.filter((sub) => {
     const matchesSearch = 
-      sub.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sub.userEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sub.planKey.toLowerCase().includes(searchTerm.toLowerCase());
+      sub.userName?.toLowerCase().includes(normalizedSearchTerm) ||
+      sub.userEmail?.toLowerCase().includes(normalizedSearchTerm) ||
+      sub.planKey.toLowerCase().includes(normalizedSearchTerm);
     
     const matchesStatus = statusFilter === "all" || sub.status === statusFilter;
     
@@ -54,7 +52,8 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
 
   const subscriptionsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(filteredSubscriptions.length / subscriptionsPerPage));
-  const startIndex = (subscriptionPage - 1) * subscriptionsPerPage;
+  const currentPage = Math.min(subscriptionPage, totalPages);
+  const startIndex = (currentPage - 1) * subscriptionsPerPage;
   const paginatedSubscriptions = filteredSubscriptions.slice(startIndex, startIndex + subscriptionsPerPage);
   const pageNumbers = useMemo(() => {
     const maxButtons = 5;
@@ -63,7 +62,7 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
     }
 
     const halfWindow = Math.floor(maxButtons / 2);
-    let start = Math.max(1, subscriptionPage - halfWindow);
+    let start = Math.max(1, currentPage - halfWindow);
     let end = start + maxButtons - 1;
 
     if (end > totalPages) {
@@ -72,17 +71,7 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
     }
 
     return Array.from({ length: end - start + 1 }, (_, index) => start + index);
-  }, [subscriptionPage, totalPages]);
-
-  useEffect(() => {
-    setSubscriptionPage(1);
-  }, [searchTerm, statusFilter]);
-
-  useEffect(() => {
-    if (subscriptionPage > totalPages) {
-      setSubscriptionPage(totalPages);
-    }
-  }, [subscriptionPage, totalPages]);
+  }, [currentPage, totalPages]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -189,14 +178,20 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
             type="text"
             placeholder={t("searchPlaceholder")}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setSubscriptionPage(1);
+            }}
             className="w-full pl-11 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setSubscriptionPage(1);
+          }}
           className="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="all">{t("allStatus")}</option>
@@ -295,12 +290,12 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
         {filteredSubscriptions.length > 0 && (
           <nav
             className="flex items-center justify-between px-6 py-4 border-t border-border bg-secondary"
-            aria-label={t("pagination.page", { current: subscriptionPage, total: totalPages })}
+            aria-label={t("pagination.page", { current: currentPage, total: totalPages })}
           >
             <button
               type="button"
               onClick={() => setSubscriptionPage((page) => Math.max(1, page - 1))}
-              disabled={subscriptionPage === 1}
+              disabled={currentPage === 1}
               className="px-3 py-1.5 text-sm font-medium rounded-md border border-border text-muted-foreground hover:bg-hover disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t("pagination.previous")}
@@ -311,7 +306,7 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
                 <button
                   type="button"
                   onClick={() => setSubscriptionPage(1)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md border hover:bg-hover ${subscriptionPage === 1 ? "bg-foreground text-background border-transparent" : "text-muted-foreground border-border"}`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md border hover:bg-hover ${currentPage === 1 ? "bg-foreground text-background border-transparent" : "text-muted-foreground border-border"}`}
                 >
                   1
                 </button>
@@ -324,9 +319,9 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
                   type="button"
                   onClick={() => setSubscriptionPage(pageNumber)}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md border hover:bg-hover ${
-                    subscriptionPage === pageNumber ? "bg-foreground text-background border-transparent" : "text-muted-foreground border-border"
+                    currentPage === pageNumber ? "bg-foreground text-background border-transparent" : "text-muted-foreground border-border"
                   }`}
-                  aria-current={subscriptionPage === pageNumber ? "page" : undefined}
+                  aria-current={currentPage === pageNumber ? "page" : undefined}
                 >
                   {pageNumber}
                 </button>
@@ -339,7 +334,7 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
                 <button
                   type="button"
                   onClick={() => setSubscriptionPage(totalPages)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md border hover:bg-hover ${subscriptionPage === totalPages ? "bg-foreground text-background border-transparent" : "text-muted-foreground border-border"}`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md border hover:bg-hover ${currentPage === totalPages ? "bg-foreground text-background border-transparent" : "text-muted-foreground border-border"}`}
                 >
                   {totalPages}
                 </button>
@@ -349,7 +344,7 @@ export function SubscriptionsTable({ subscriptions: initialSubscriptions, stats 
             <button
               type="button"
               onClick={() => setSubscriptionPage((page) => Math.min(totalPages, page + 1))}
-              disabled={subscriptionPage === totalPages}
+              disabled={currentPage === totalPages}
               className="px-3 py-1.5 text-sm font-medium rounded-md border border-border text-muted-foreground hover:bg-hover disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t("pagination.next")}

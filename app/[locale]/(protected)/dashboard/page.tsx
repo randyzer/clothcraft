@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import { getDefaultOneTimePack } from "@/lib/billing-display";
 import { getSubscriptionPlanTranslationKey } from "@/lib/account-settings";
-
+import type { ClientUserProfile, UserProfileResponse } from "@/lib/client-api";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<ClientUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const defaultPack = getDefaultOneTimePack();
 
@@ -29,7 +29,7 @@ export default function DashboardPage() {
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as UserProfileResponse;
         setUserProfile(data.user);
       }
     } catch (error) {
@@ -63,10 +63,10 @@ export default function DashboardPage() {
       
       // Clean up URL after showing success
       setTimeout(() => {
-        router.replace("/dashboard");
+        router.replace(`/${locale}/dashboard`);
       }, 5000);
     }
-  }, [searchParams, router, fetchUserProfile]);
+  }, [searchParams, router, fetchUserProfile, locale]);
   
   const startCheckout = useCallback(
     async () => {
@@ -98,7 +98,7 @@ export default function DashboardPage() {
         <Background />
         <Container className="relative z-10 py-20">
           <div className="flex justify-center items-center h-64">
-            <p className="text-muted-foreground">Loading...</p>
+            <p className="text-muted-foreground">{tCommon('status.loading')}</p>
           </div>
         </Container>
       </div>

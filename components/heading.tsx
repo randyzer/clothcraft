@@ -1,6 +1,16 @@
 import { cn } from "@/lib/utils";
-import { AnimationProps, MotionProps } from "framer-motion";
+import { MotionProps } from "framer-motion";
 import React from "react";
+
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+type HeadingProps = {
+  className?: string;
+  as?: HeadingTag;
+  children: React.ReactNode;
+  size?: "sm" | "md" | "xl" | "2xl";
+} & MotionProps &
+  React.HTMLAttributes<HTMLHeadingElement>;
 
 export const Heading = ({
   className,
@@ -8,14 +18,7 @@ export const Heading = ({
   children,
   size = "md",
   ...props
-}: {
-  className?: string;
-  as?: any;
-  children: any;
-  size?: "sm" | "md" | "xl" | "2xl";
-  props?: React.HTMLAttributes<HTMLHeadingElement | AnimationProps>;
-} & MotionProps &
-  React.HTMLAttributes<HTMLHeadingElement | AnimationProps>) => {
+}: HeadingProps) => {
   const sizeVariants = {
     sm: "text-xl md:text-2xl md:leading-snug",
     md: "text-3xl md:text-5xl md:leading-tight",

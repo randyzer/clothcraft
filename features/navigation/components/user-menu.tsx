@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "@/lib/auth-client";
@@ -82,10 +83,13 @@ export function UserMenu() {
         className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs ring-1 ring-transparent hover:ring-blue-500/50 transition-all"
       >
         {user.image ? (
-          <img
+          <Image
             src={user.image}
             alt={user.name || "User"}
+            width={24}
+            height={24}
             className="h-full w-full rounded-full object-cover"
+            unoptimized
           />
         ) : (
           initial

@@ -1,17 +1,26 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useTheme } from "next-themes";
 import React, { useId } from "react";
+
+function getAnimationTiming(seed: number) {
+  return {
+    duration: 1.2 + (seed % 5) * 0.35,
+    delay: 5 + (seed % 6),
+  };
+}
 
 export const Background = () => {
   return (
     <div className="absolute inset-0 h-full w-full overflow-hidden pointer-events-none z-0">
       <div className="absolute inset-0 h-full w-full bg-background pointer-events-none [mask-image:radial-gradient(ellipse_at_center,transparent,white)]" />
-      {Array.from({ length: 6 }).map((_, index) => (
-        <div className="flex" key={"grid-column" + index}>
-          {Array.from({ length: 10 }).map((_, index) => (
-            <GridBlock key={`grid-row` + index} />
+      {Array.from({ length: 6 }).map((_, columnIndex) => (
+        <div className="flex" key={`grid-column-${columnIndex}`}>
+          {Array.from({ length: 10 }).map((_, rowIndex) => (
+            <GridBlock
+              key={`grid-row-${columnIndex}-${rowIndex}`}
+              animationSeed={columnIndex * 10 + rowIndex}
+            />
           ))}
         </div>
       ))}
@@ -19,15 +28,15 @@ export const Background = () => {
   );
 };
 
-const GridBlock = () => {
+const GridBlock = ({ animationSeed }: { animationSeed: number }) => {
   return (
     <div className="flex flex-col items-start justify-center  w-60">
       <div className="flex items-center justify-center">
         <Dot />
-        <SVG />
+        <SVG animationSeed={animationSeed * 2} />
         {/* <Dot /> */}
       </div>
-      <SVGVertical className="ml-3" />
+      <SVGVertical className="ml-3" animationSeed={animationSeed * 2 + 1} />
     </div>
   );
 };
@@ -40,11 +49,18 @@ const Dot = () => {
   );
 };
 
-const SVGVertical = ({ className }: { className?: string }) => {
+const SVGVertical = ({
+  className,
+  animationSeed,
+}: {
+  className?: string;
+  animationSeed: number;
+}) => {
   const width = 1;
   const height = 140;
-
   const id = useId();
+  const timing = getAnimationTiming(animationSeed);
+
   return (
     <motion.svg
       width={width}
@@ -68,8 +84,8 @@ const SVGVertical = ({ className }: { className?: string }) => {
           animate={{ x1: 2, y1: 400, x2: 2, y2: 600 }}
           transition={{
             repeat: Infinity,
-            duration: Math.random() * 2 + 1,
-            delay: Math.floor(Math.random() * 6) + 5,
+            duration: timing.duration,
+            delay: timing.delay,
           }}
           gradientUnits="userSpaceOnUse"
         >
@@ -82,11 +98,18 @@ const SVGVertical = ({ className }: { className?: string }) => {
   );
 };
 
-const SVG = ({ className }: { className?: string }) => {
+const SVG = ({
+  className,
+  animationSeed,
+}: {
+  className?: string;
+  animationSeed: number;
+}) => {
   const width = 300;
   const height = 1;
-
   const id = useId();
+  const timing = getAnimationTiming(animationSeed);
+
   return (
     <motion.svg
       width={width}
@@ -110,8 +133,8 @@ const SVG = ({ className }: { className?: string }) => {
           animate={{ x1: 400, y1: 0, x2: 600, y2: 0 }}
           transition={{
             repeat: Infinity,
-            duration: Math.random() * 2 + 1,
-            delay: Math.floor(Math.random() * 6) + 5,
+            duration: timing.duration,
+            delay: timing.delay,
           }}
           gradientUnits="userSpaceOnUse"
         >

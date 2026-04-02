@@ -8,6 +8,7 @@ import { uploadImageFromUrl } from "@/lib/r2-storage";
 import { eq } from "drizzle-orm";
 import { createCreditCompensation } from "@/lib/credit-compensation";
 import { getActiveSessionUser } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/error-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -110,13 +111,13 @@ export async function POST(req: NextRequest) {
         sourceImageUrl: imageUrl,
       });
 
-    } catch (genError: any) {
+    } catch (genError: unknown) {
       await compensation.compensate();
       // Update history to failed
       await db.update(generationHistory)
         .set({ 
           status: "failed", 
-          error: genError.message,
+          error: getErrorMessage(genError, "Failed to generate image"),
           updatedAt: new Date(),
         })
         .where(eq(generationHistory.id, historyId));
@@ -124,10 +125,10 @@ export async function POST(req: NextRequest) {
       throw genError;
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Image generation API error:", error);
     return NextResponse.json({ 
-      error: error.message || "Failed to generate image" 
+      error: getErrorMessage(error, "Failed to generate image"),
     }, { status: 500 });
   }
 }

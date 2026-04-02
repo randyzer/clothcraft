@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { user, verification } from "@/lib/db/schema";
-import { eq, and, gt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Update user's email verification status
-    const updateResult = await db
+    await db
       .update(user)
       .set({ 
         emailVerified: true,

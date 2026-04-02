@@ -6,8 +6,9 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Container } from "@/components/container";
 import { Background } from "@/components/background";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getSubscriptionPlanTranslationKey } from "@/lib/account-settings";
+import type { ClientUserProfile, UserProfileResponse } from "@/lib/client-api";
 
 export default function ProfilePage() {
   const session = useSession();
@@ -15,29 +16,37 @@ export default function ProfilePage() {
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
   const tDashboard = useTranslations('dashboard');
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch user profile with credits and subscription
-  const fetchUserProfile = useCallback(async () => {
-    try {
-      const response = await fetch("/api/user/profile");
-      if (response.ok) {
-        const data = await response.json();
-        setUserProfile(data.user);
-      }
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [userProfile, setUserProfile] = useState<ClientUserProfile | null>(null);
 
   useEffect(() => {
-    if (session.data?.user?.id) {
-      fetchUserProfile();
+    if (!session.data?.user?.id) {
+      return;
     }
-  }, [session.data?.user?.id, fetchUserProfile]);
+
+    let isCancelled = false;
+
+    const loadUserProfile = async () => {
+      try {
+        const response = await fetch("/api/user/profile");
+        if (!response.ok || isCancelled) {
+          return;
+        }
+
+        const data = (await response.json()) as UserProfileResponse;
+        if (!isCancelled) {
+          setUserProfile(data.user);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    void loadUserProfile();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [session.data?.user?.id]);
 
   // Authentication is already handled in the layout
   const user = session.data?.user;

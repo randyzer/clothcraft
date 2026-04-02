@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadImageFromUrl } from "@/lib/r2-storage";
 import { getActiveSessionUser } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/error-utils";
 
 // Simple image dimension detection for common formats
 async function getImageDimensions(buffer: Buffer, mimeType: string): Promise<{ width: number; height: number } | null> {
@@ -64,9 +64,9 @@ export async function POST(req: NextRequest) {
 
     // Parse form data
     const formData = await req.formData();
-    const file = formData.get('file') as File;
-    
-    if (!file) {
+    const file = formData.get('file');
+
+    if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
@@ -159,10 +159,10 @@ export async function POST(req: NextRequest) {
       type: file.type
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Upload error:", error);
     return NextResponse.json({ 
-      error: error.message || "Failed to upload file" 
+      error: getErrorMessage(error, "Failed to upload file"),
     }, { status: 500 });
   }
 }

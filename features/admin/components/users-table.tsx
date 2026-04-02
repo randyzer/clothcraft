@@ -16,7 +16,7 @@ import {
   Minus,
   Package
 } from "lucide-react";
-import { updateUserRole, banUser, updateUserCredits } from "@/features/admin/actions/user-actions";
+import { updateUserRole, banUser } from "@/features/admin/actions/user-actions";
 import { toast } from "sonner";
 import type { AdminUserListItem } from "@/lib/admin-user-directory";
 
@@ -121,7 +121,7 @@ export function UsersTable({
         )
       );
       toast.success(t("roleUpdated"));
-    } catch (error) {
+    } catch {
       toast.error(t("roleUpdateFailed"));
     }
   };
@@ -137,22 +137,8 @@ export function UsersTable({
         )
       );
       toast.success(banned ? t("userBanned") : t("userUnbanned"));
-    } catch (error) {
+    } catch {
       toast.error(t("banFailed"));
-    }
-  };
-
-  const handleUpdateCredits = async (userId: string, credits: number) => {
-    try {
-      await updateUserCredits(userId, credits);
-      setUsers((currentUsers) =>
-        currentUsers.map((existingUser) =>
-          existingUser.id === userId ? { ...existingUser, credits } : existingUser
-        )
-      );
-      toast.success(t("creditsUpdated"));
-    } catch (error) {
-      toast.error(t("creditsUpdateFailed"));
     }
   };
 
@@ -428,9 +414,6 @@ export function UsersTable({
             setIsEditModalOpen(false);
             setSelectedUser(null);
           }}
-          onUpdate={(updatedUser) => {
-            setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
-          }}
         />
       )}
 
@@ -497,7 +480,7 @@ function CreditsManagementModal({
       } else {
         toast.error(t("creditsUpdateFailed"));
       }
-    } catch (error) {
+    } catch {
       toast.error(t("creditsUpdateFailed"));
     }
   };
@@ -610,7 +593,7 @@ function SubscriptionManagementModal({
       } else {
         toast.error(t("subscriptionUpdateFailed"));
       }
-    } catch (error) {
+    } catch {
       toast.error(t("subscriptionUpdateFailed"));
     }
   };
@@ -673,12 +656,10 @@ function SubscriptionManagementModal({
 
 function UserDetailModal({ 
   user, 
-  onClose, 
-  onUpdate 
+  onClose,
 }: { 
   user: User; 
   onClose: () => void;
-  onUpdate: (user: User) => void;
 }) {
   const t = useTranslations("Admin.users");
 

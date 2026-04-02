@@ -7,6 +7,12 @@ import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/button";
 import { Background } from "@/components/background";
 import { MarkdownMessage } from "@/components/markdown-message";
+import type {
+  ApiErrorResponse,
+  ChatStreamEvent,
+  UserProfileResponse,
+} from "@/lib/client-api";
+import { getApiErrorMessage, getErrorMessage } from "@/lib/error-utils";
 import { motion } from "framer-motion";
 import { 
   Send, 
@@ -56,7 +62,7 @@ export default function ChatPage() {
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as UserProfileResponse;
         setRemainingCredits(data.user.credits);
       } else if (response.status === 401 || response.status === 403) {
         setRemainingCredits(null);
@@ -113,8 +119,8 @@ export default function ChatPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send message");
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Failed to send message"));
       }
 
       const reader = response.body?.getReader();
@@ -136,7 +142,7 @@ export default function ChatPage() {
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             try {
-              const data = JSON.parse(line.slice(6));
+              const data = JSON.parse(line.slice(6)) as ChatStreamEvent;
               
               if (data.type === "metadata") {
                 setChatSessionId(data.sessionId);
@@ -157,18 +163,19 @@ export default function ChatPage() {
               } else if (data.type === "error") {
                 throw new Error(data.error);
               }
-            } catch (e) {
+            } catch {
               // Ignore parsing errors for incomplete chunks
             }
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending message:", error);
-      setError(error.message);
+      const message = getErrorMessage(error, "Failed to send message");
+      setError(message);
       setMessages(prev => prev.filter(msg => msg.id !== assistantMessageId));
       
-      if (error.message?.includes("credits")) {
+      if (message.includes("credits")) {
         setError(t('insufficientCredits'));
       }
     } finally {

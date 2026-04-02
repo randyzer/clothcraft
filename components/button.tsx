@@ -1,21 +1,26 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 
-export const Button: React.FC<{
+type ButtonOwnProps<T extends React.ElementType> = {
   children?: React.ReactNode;
   className?: string;
   variant?: "simple" | "outline" | "primary";
   size?: "sm" | "md" | "lg";
-  as?: React.ElementType;
-  [x: string]: any;
-}> = ({
+  as?: T;
+};
+
+type ButtonProps<T extends React.ElementType> = ButtonOwnProps<T> &
+  Omit<React.ComponentPropsWithoutRef<T>, keyof ButtonOwnProps<T>>;
+
+export function Button<T extends React.ElementType = "button">({
   children,
   className,
   variant = "primary",
   size = "md",
-  as: Tag = "button",
+  as,
   ...props
-}) => {
+}: ButtonProps<T>) {
+  const Tag = (as ?? "button") as React.ElementType;
   const sizeClass =
     size === "sm"
       ? "text-xs px-3 py-1.5"
@@ -44,4 +49,4 @@ export const Button: React.FC<{
       {children ?? `Get Started`}
     </Tag>
   );
-};
+}

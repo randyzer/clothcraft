@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isPackKey, isSubscriptionKey, oneTimePacks, subscriptionPlans } from "@/constants/billing";
 import { createCheckoutSession } from "@/lib/payments/creem";
 import { getActiveSessionUser } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/error-utils";
 
 type Body = {
   kind: "subscription" | "one_time";
@@ -22,8 +23,8 @@ export async function POST(req: NextRequest) {
 
     let creemPriceId: string | undefined;
     // Add success=1 so client has a stable success signal on return
-    let successUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard?success=1`;
-    let cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/pricing`;
+    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard?success=1`;
+    const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/pricing`;
 
     if (kind === "subscription") {
       if (!isSubscriptionKey(key)) {
@@ -51,8 +52,11 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url });
-  } catch (e: any) {
-    console.error("Creem checkout error:", e);
-    return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("Creem checkout error:", error);
+    return NextResponse.json(
+      { error: getErrorMessage(error, "Server error") },
+      { status: 500 }
+    );
   }
 }

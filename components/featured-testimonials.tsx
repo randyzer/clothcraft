@@ -12,10 +12,15 @@ const images = [
   "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3534&q=80",
 ];
 
+type FeaturedTestimonialPerson = {
+  name: string;
+  designation: string;
+};
+
 export function FeaturedTestimonials() {
   const t = useTranslations('featuredTestimonials');
   
-  const people = (t.raw('people') as any[]).map((person, index) => ({
+  const people = (t.raw('people') as FeaturedTestimonialPerson[]).map((person, index) => ({
     id: index + 1,
     name: person.name,
     designation: person.designation,

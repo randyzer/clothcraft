@@ -3,7 +3,9 @@ import {
   ChatRequest, 
   ChatResponse, 
   ChatMessage,
-  VolcanoEngineError 
+  VolcanoEngineError,
+  ChatStreamDoneChunk,
+  ChatStreamResponseChunk,
 } from './types';
 
 export async function createChatCompletion(
@@ -80,7 +82,7 @@ export async function createChatStream(
   return response.body;
 }
 
-export function parseSSEChunk(chunk: string): any | null {
+export function parseSSEChunk(chunk: string): ChatStreamResponseChunk | ChatStreamDoneChunk | null {
   const lines = chunk.split('\n');
   
   for (const line of lines) {
@@ -92,8 +94,8 @@ export function parseSSEChunk(chunk: string): any | null {
       }
       
       try {
-        return JSON.parse(data);
-      } catch (e) {
+        return JSON.parse(data) as ChatStreamResponseChunk;
+      } catch {
         // Ignore parse errors
       }
     }

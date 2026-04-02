@@ -1,15 +1,15 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useId } from "react";
-import { motion } from "framer-motion";
+
+type HorizontalGradientProps = React.SVGProps<SVGSVGElement> & {
+  className?: string;
+};
 
 export const HorizontalGradient = ({
   className,
   ...props
-}: {
-  className: string;
-  [x: string]: any;
-}) => {
+}: HorizontalGradientProps) => {
   const id = useId();
   return (
     <svg

@@ -19,7 +19,6 @@ interface ResetPasswordEmailProps {
 
 export const ResetPasswordEmail = ({
   resetUrl,
-  userEmail,
 }: ResetPasswordEmailProps) => {
   return (
     <Html>
@@ -53,8 +52,8 @@ export const ResetPasswordEmail = ({
           </Text>
 
           <Text style={footer}>
-            If you didn't request a password reset, you can safely ignore this email.
-            Your password won't be changed.
+            If you didn&apos;t request a password reset, you can safely ignore this email.
+            Your password won&apos;t be changed.
           </Text>
         </Container>
       </Body>

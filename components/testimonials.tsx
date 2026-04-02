@@ -1,13 +1,20 @@
 "use client";
-import { useState } from "react";
 import { Heading } from "./heading";
 import { Subheading } from "./subheading";
 import { cn } from "@/lib/utils";
 import { InViewDiv } from "./in-view-div";
-import { useMemo } from "react";
 import { TestimonialColumnContainer } from "./testimonial-column-container";
 import Image from "next/image";
 import { useTranslations } from 'next-intl';
+
+const TESTIMONIAL_ANIMATION_DELAYS = [
+  "0s",
+  "0.1s",
+  "0.2s",
+  "0.3s",
+  "0.4s",
+  "0.5s",
+] as const;
 
 export const Testimonials = () => {
   const t = useTranslations('testimonials');
@@ -35,25 +42,13 @@ function Testimonial({
   quote,
   src,
   designation,
+  animationDelay,
   className,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<"figure">, keyof Testimonial> &
-  Testimonial) {
-  let animationDelay = useMemo(() => {
-    let possibleAnimationDelays = [
-      "0s",
-      "0.1s",
-      "0.2s",
-      "0.3s",
-      "0.4s",
-      "0.5s",
-    ];
-    return possibleAnimationDelays[
-      Math.floor(Math.random() * possibleAnimationDelays.length)
-    ];
-  }, []);
-
-  const boxStyle = {};
+}: Omit<React.ComponentPropsWithoutRef<"figure">, keyof Testimonial | "animationDelay"> &
+  Testimonial & {
+    animationDelay: string;
+  }) {
   return (
     <figure
       className={cn(
@@ -104,28 +99,33 @@ function TestimonialColumn({
 }) {
   return (
     <TestimonialColumnContainer className={cn(className)} shift={shift}>
-      {testimonials
-        .concat(testimonials)
-        .map((testimonial, testimonialIndex) => (
+      {testimonials.concat(testimonials).map((testimonial, testimonialIndex) => {
+        const reviewIndex = testimonialIndex % testimonials.length;
+        const animationDelay =
+          TESTIMONIAL_ANIMATION_DELAYS[
+            testimonialIndex % TESTIMONIAL_ANIMATION_DELAYS.length
+          ];
+
+        return (
           <Testimonial
             name={testimonial.name}
             quote={testimonial.quote}
             src={testimonial.src}
             designation={testimonial.designation}
-            key={testimonialIndex}
-            className={containerClassName?.(
-              testimonialIndex % testimonials.length
-            )}
+            animationDelay={animationDelay}
+            key={`${testimonial.name}-${testimonialIndex}`}
+            className={containerClassName?.(reviewIndex)}
           />
-        ))}
+        );
+      })}
     </TestimonialColumnContainer>
   );
 }
 
 function splitArray<T>(array: Array<T>, numParts: number) {
-  let result: Array<Array<T>> = [];
+  const result: Array<Array<T>> = [];
   for (let i = 0; i < array.length; i++) {
-    let index = i % numParts;
+    const index = i % numParts;
     if (!result[index]) {
       result[index] = [];
     }
@@ -152,10 +152,10 @@ function TestimonialGrid() {
     src: `https://i.pravatar.cc/150?img=${i + 1}`
   }));
   
-  let columns = splitArray(testimonials, 3);
-  let column1 = columns[0];
-  let column2 = columns[1];
-  let column3 = splitArray(columns[2], 2);
+  const columns = splitArray(testimonials, 3);
+  const column1 = columns[0];
+  const column2 = columns[1];
+  const column3 = splitArray(columns[2], 2);
   return (
     <InViewDiv className="relative -mx-4 mt-16 grid h-[49rem] max-h-[150vh] grid-cols-1 items-start gap-8 overflow-hidden px-4 sm:mt-20 md:grid-cols-2 lg:grid-cols-3">
       <TestimonialColumn

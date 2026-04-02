@@ -9,6 +9,7 @@ import { randomUUID } from "crypto";
 import { getOrCreateOwnedChatSession } from "@/lib/chat-session";
 import { createCreditCompensation } from "@/lib/credit-compensation";
 import { getActiveSessionUser } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/error-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -143,10 +144,10 @@ export async function POST(req: NextRequest) {
       throw error;
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Chat API error:", error);
     return NextResponse.json({ 
-      error: error.message || "Failed to process chat" 
+      error: getErrorMessage(error, "Failed to process chat"),
     }, { status: 500 });
   }
 }

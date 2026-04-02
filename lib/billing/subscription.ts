@@ -84,7 +84,7 @@ export type ScheduleCreationPayload = {
   nextGrantAt: Date | null;
 };
 
-type DbExecutor = typeof db;
+type DbExecutor = Pick<typeof db, "delete" | "insert">;
 
 export async function resetSubscriptionSchedule(
   payload: ScheduleCreationPayload,

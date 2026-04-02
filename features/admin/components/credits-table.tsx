@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import {
   Database,
@@ -43,18 +43,18 @@ interface CreditsTableProps {
 }
 
 export function CreditsTable({ transactions: initialTransactions, stats, topUsers }: CreditsTableProps) {
-  const [transactions] = useState(initialTransactions);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [transactionPage, setTransactionPage] = useState(1);
   const t = useTranslations("Admin.credits");
   const locale = useLocale();
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-  const filteredTransactions = transactions.filter((transaction) => {
+  const filteredTransactions = initialTransactions.filter((transaction) => {
     const matchesSearch = 
-      transaction.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.userEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.reason.toLowerCase().includes(searchTerm.toLowerCase());
+      transaction.userName?.toLowerCase().includes(normalizedSearchTerm) ||
+      transaction.userEmail?.toLowerCase().includes(normalizedSearchTerm) ||
+      transaction.reason.toLowerCase().includes(normalizedSearchTerm);
     
     const matchesType = 
       typeFilter === "all" ||
@@ -66,7 +66,8 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
 
   const transactionsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / transactionsPerPage));
-  const startIndex = (transactionPage - 1) * transactionsPerPage;
+  const currentPage = Math.min(transactionPage, totalPages);
+  const startIndex = (currentPage - 1) * transactionsPerPage;
   const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + transactionsPerPage);
   const topUsersToDisplay = topUsers.slice(0, 10);
   const pageNumbers = useMemo(() => {
@@ -76,7 +77,7 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
     }
 
     const halfWindow = Math.floor(maxButtons / 2);
-    let start = Math.max(1, transactionPage - halfWindow);
+    let start = Math.max(1, currentPage - halfWindow);
     let end = start + maxButtons - 1;
 
     if (end > totalPages) {
@@ -85,17 +86,7 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
     }
 
     return Array.from({ length: end - start + 1 }, (_, index) => start + index);
-  }, [transactionPage, totalPages]);
-
-  useEffect(() => {
-    setTransactionPage(1);
-  }, [searchTerm, typeFilter]);
-
-  useEffect(() => {
-    if (transactionPage > totalPages) {
-      setTransactionPage(totalPages);
-    }
-  }, [transactionPage, totalPages]);
+  }, [currentPage, totalPages]);
 
   const getReasonLabel = (reason: string) => {
     switch (reason) {
@@ -243,14 +234,20 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
                 type="text"
                 placeholder={t("searchPlaceholder")}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setTransactionPage(1);
+                }}
                 className="w-full pl-11 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setTransactionPage(1);
+              }}
               className="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="all">{t("allTypes")}</option>
@@ -344,12 +341,12 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
             {filteredTransactions.length > 0 && (
               <nav
                 className="flex items-center justify-between px-6 py-4 border-t border-border bg-secondary"
-                aria-label={t("pagination.page", { current: transactionPage, total: totalPages })}
+                aria-label={t("pagination.page", { current: currentPage, total: totalPages })}
               >
                 <button
                   type="button"
                   onClick={() => setTransactionPage((page) => Math.max(1, page - 1))}
-                  disabled={transactionPage === 1}
+                  disabled={currentPage === 1}
                   className="px-3 py-1.5 text-sm font-medium rounded-md border border-border text-muted-foreground hover:bg-hover disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {t("pagination.previous")}
@@ -360,7 +357,7 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
                     <button
                       type="button"
                       onClick={() => setTransactionPage(1)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${transactionPage === 1 ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${currentPage === 1 ? "bg-foreground text-background" : "text-muted-foreground"}`}
                     >
                       1
                     </button>
@@ -373,9 +370,9 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
                       type="button"
                       onClick={() => setTransactionPage(pageNumber)}
                       className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${
-                        transactionPage === pageNumber ? "bg-foreground text-background" : "text-muted-foreground"
+                        currentPage === pageNumber ? "bg-foreground text-background" : "text-muted-foreground"
                       }`}
-                      aria-current={transactionPage === pageNumber ? "page" : undefined}
+                      aria-current={currentPage === pageNumber ? "page" : undefined}
                     >
                       {pageNumber}
                     </button>
@@ -388,7 +385,7 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
                     <button
                       type="button"
                       onClick={() => setTransactionPage(totalPages)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${transactionPage === totalPages ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md border border-border hover:bg-hover ${currentPage === totalPages ? "bg-foreground text-background" : "text-muted-foreground"}`}
                     >
                       {totalPages}
                     </button>
@@ -398,7 +395,7 @@ export function CreditsTable({ transactions: initialTransactions, stats, topUser
                 <button
                   type="button"
                   onClick={() => setTransactionPage((page) => Math.min(totalPages, page + 1))}
-                  disabled={transactionPage === totalPages}
+                  disabled={currentPage === totalPages}
                   className="px-3 py-1.5 text-sm font-medium rounded-md border border-border text-muted-foreground hover:bg-hover disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {t("pagination.next")}

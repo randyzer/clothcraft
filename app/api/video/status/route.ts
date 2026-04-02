@@ -6,9 +6,18 @@ import { db } from "@/lib/db";
 import { generationHistory } from "@/lib/db/schema";
 import { volcanoEngine } from "@/lib/volcano-engine";
 import { normalizeStatus } from "@/lib/volcano-engine/video";
+import type { VolcanoEngineTaskData } from "@/lib/volcano-engine/types";
 import { uploadImageFromUrl } from "@/lib/r2-storage";
 import { eq, and } from "drizzle-orm";
 import { getActiveSessionUser } from "@/lib/auth/session";
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function getFirstString(...values: Array<unknown>) {
+  return values.find((value): value is string => typeof value === "string" && value.length > 0);
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -65,7 +74,10 @@ export async function GET(req: NextRequest) {
 
       // According to Volcano Engine docs, the response structure is:
       // { data: { task_status: "xxx", task_status_text: "xxx", result: { video_url: "xxx" } } }
-      const taskData = status.data || status;
+      const taskData: VolcanoEngineTaskData = status.data ?? {
+        task_id: taskId,
+        task_status: typeof status.status === "string" ? status.status : "PENDING",
+      };
       const rawTaskStatus = typeof taskData.task_status === 'string'
         ? taskData.task_status
         : typeof taskData.status === 'string'
@@ -73,7 +85,8 @@ export async function GET(req: NextRequest) {
           : typeof status.status === 'string'
             ? status.status
             : '';
-      const taskStatusText = taskData.task_status_text || '';
+      const taskStatusText =
+        typeof taskData.task_status_text === "string" ? taskData.task_status_text : "";
       const normalizedStatus = normalizeStatus(rawTaskStatus, taskStatusText);
       
       // Video URL 可能存在于不同字段或数组结构
@@ -82,7 +95,7 @@ export async function GET(req: NextRequest) {
                       taskData.result?.video?.[0]?.url ||
                       taskData.result?.videos?.[0]?.url ||
                       taskData.result?.output?.video_url ||
-                      taskData.result?.contents?.find?.((item: any) => item?.type === 'video')?.url ||
+                      taskData.result?.contents?.find((item) => item?.type === 'video')?.url ||
                       status.content?.video_url ||
                       status.output?.video_url ||
                       status.output?.url ||
@@ -131,12 +144,14 @@ export async function GET(req: NextRequest) {
           });
         }
       } else if (isFailed) {
-        const errorMessage = taskData.error || 
-                           taskData.result?.error || 
-                           status.output?.error || 
-                           status.error || 
-                           taskStatusText ||
-                           "Video generation failed";
+        const errorMessage =
+          getFirstString(
+            taskData.error,
+            taskData.result?.error,
+            status.output?.error,
+            status.error,
+            taskStatusText,
+          ) ?? "Video generation failed";
         await db.update(generationHistory)
           .set({ 
             status: "failed",
@@ -188,7 +203,7 @@ export async function GET(req: NextRequest) {
           elapsedSeconds: Math.floor((now - createdAt) / 1000),
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error checking video status:", error);
       return NextResponse.json({
         id: historyId,
@@ -198,10 +213,10 @@ export async function GET(req: NextRequest) {
       });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Video status API error:", error);
     return NextResponse.json({ 
-      error: error.message || "Failed to get video status" 
+      error: getErrorMessage(error, "Failed to get video status"),
     }, { status: 500 });
   }
 }

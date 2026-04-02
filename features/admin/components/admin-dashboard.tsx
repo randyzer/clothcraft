@@ -12,6 +12,26 @@ import {
 import Link from "next/link";
 import { useLocale } from "next-intl";
 
+interface AdminRecentUser {
+  id: string;
+  name: string;
+  email: string;
+  credits: number;
+  role: string;
+  createdAt: Date;
+}
+
+interface AdminRecentPayment {
+  id: string;
+  userId: string;
+  userName: string | null;
+  userEmail: string | null;
+  amountCents: number;
+  status: string;
+  type: string;
+  createdAt: Date;
+}
+
 interface AdminDashboardProps {
   stats: {
     totalUsers: number;
@@ -21,8 +41,8 @@ interface AdminDashboardProps {
     totalChats: number;
     totalCreditsUsed: number;
   };
-  recentUsers: any[];
-  recentPayments: any[];
+  recentUsers: AdminRecentUser[];
+  recentPayments: AdminRecentPayment[];
 }
 
 export function AdminDashboard({ stats, recentUsers, recentPayments }: AdminDashboardProps) {
@@ -172,7 +192,7 @@ export function AdminDashboard({ stats, recentUsers, recentPayments }: AdminDash
           </div>
           <div className="p-4">
             <div className="space-y-3">
-              {recentPayments.map((payment: any) => (
+              {recentPayments.map((payment) => (
                 <div key={payment.id} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-foreground">

@@ -3,11 +3,9 @@
 import { Mail, ArrowRight, RefreshCcw } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 export default function CheckEmailPage() {
-  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('auth.checkEmail');
   const [isResending, setIsResending] = useState(false);
@@ -29,7 +27,7 @@ export default function CheckEmailPage() {
         const data = await response.json();
         setResendMessage(data.error || t('resendError'));
       }
-    } catch (error) {
+    } catch {
       setResendMessage(t('resendError'));
     } finally {
       setIsResending(false);

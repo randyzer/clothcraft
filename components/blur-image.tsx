@@ -1,17 +1,12 @@
 "use client";
 
 import clsx from "clsx";
-import Image from "next/image";
+import Image, { type ImageProps } from "next/image";
 import React, { useState } from "react";
 
-interface IBlurImage {
-  height?: any;
-  width?: any;
-  src?: string | any;
-  objectFit?: any;
-  className?: string | any;
-  alt?: string | undefined;
-  [x: string]: any;
+interface BlurImageProps extends Omit<ImageProps, "alt"> {
+  alt?: string;
+  objectFit?: React.CSSProperties["objectFit"];
 }
 
 export const BlurImage = ({
@@ -22,7 +17,7 @@ export const BlurImage = ({
   objectFit,
   alt,
   ...rest
-}: IBlurImage) => {
+}: BlurImageProps) => {
   const [isLoading, setLoading] = useState(true);
   return (
     <Image
@@ -37,7 +32,8 @@ export const BlurImage = ({
       height={height}
       loading="lazy"
       decoding="async"
-      blurDataURL={src}
+      blurDataURL={typeof src === "string" ? src : undefined}
+      style={objectFit ? { objectFit, ...rest.style } : rest.style}
       alt={alt ? alt : "Avatar"}
       {...rest}
     />

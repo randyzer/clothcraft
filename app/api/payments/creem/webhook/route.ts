@@ -12,6 +12,79 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { sendPurchaseEmail } from "@/lib/email";
 
+type CreemMetadata = {
+  userId?: string;
+  key?: string;
+  kind?: "subscription" | "one_time";
+  subscriptionId?: string;
+};
+
+type CreemDateValue = string | number | Date | null | undefined;
+
+type CreemPeriodInfo = {
+  end?: CreemDateValue;
+  ends_at?: CreemDateValue;
+  end_at?: CreemDateValue;
+};
+
+type CreemOrderObject = {
+  id?: string;
+  amount?: number;
+  currency?: string;
+  subscription_id?: string;
+  subscription?: {
+    id?: string;
+  };
+  subscriptionId?: string;
+  current_period_end?: CreemDateValue;
+  current_period_end_at?: CreemDateValue;
+  current_period?: CreemPeriodInfo;
+  billing_period?: CreemPeriodInfo;
+  next_payment_at?: CreemDateValue;
+  next_payment_date?: CreemDateValue;
+  next_billing_at?: CreemDateValue;
+  next_billing_date?: CreemDateValue;
+};
+
+type CreemWebhookObject = {
+  id?: string;
+  metadata?: CreemMetadata;
+  order?: CreemOrderObject;
+  subscription?: {
+    id?: string;
+  };
+  subscriptionId?: string;
+  last_transaction?: {
+    order?: string;
+  };
+  product?: {
+    price?: number;
+    currency?: string;
+  };
+  current_period_end?: CreemDateValue;
+  current_period_end_at?: CreemDateValue;
+  currentPeriodEnd?: CreemDateValue;
+  currentPeriodEndAt?: CreemDateValue;
+  current_period?: CreemPeriodInfo;
+  currentPeriod?: CreemPeriodInfo;
+  billing_period?: CreemPeriodInfo;
+  billingPeriod?: CreemPeriodInfo;
+  next_payment_at?: CreemDateValue;
+  next_payment_date?: CreemDateValue;
+  next_billing_at?: CreemDateValue;
+  next_billing_date?: CreemDateValue;
+};
+
+type CreemWebhookEvent = {
+  id?: string;
+  eventType?: string;
+  object?: CreemWebhookObject | null;
+};
+
+function getErrorMessage(error: unknown, fallback = "Unknown error") {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export async function POST(req: NextRequest) {
   // Read raw body for signature verification
   const rawBody = await req.text();
@@ -24,11 +97,15 @@ export async function POST(req: NextRequest) {
   }
 
   // Parse the webhook event
-  let event: any;
+  let event: CreemWebhookEvent;
   try {
-    event = JSON.parse(rawBody);
-  } catch (e) {
-    console.error("[Creem Webhook] Failed to parse JSON:", e);
+    const parsedEvent = JSON.parse(rawBody) as unknown;
+    if (!parsedEvent || typeof parsedEvent !== "object") {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
+    event = parsedEvent as CreemWebhookEvent;
+  } catch (error: unknown) {
+    console.error("[Creem Webhook] Failed to parse JSON:", getErrorMessage(error));
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
@@ -37,7 +114,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Handle Creem webhook structure
-    const type = event?.eventType as string | undefined;
+    const type = event.eventType;
     
     // Only log important events
     if (type === "checkout.completed" || type === "subscription.paid") {
@@ -45,10 +122,10 @@ export async function POST(req: NextRequest) {
     }
     
     // Get the main object
-    const mainObject = event?.object || {};
+    const mainObject: CreemWebhookObject = event.object ?? {};
     
     // Extract metadata from the correct location based on event type
-    let metadata: any = {};
+    let metadata: CreemMetadata = {};
     let paymentId: string | undefined;
     let subscriptionId: string | undefined;
     let amountCents = 0;
@@ -80,9 +157,9 @@ export async function POST(req: NextRequest) {
     
     // Silent processing - no need to log metadata
     
-    const userId = metadata?.userId as string | undefined;
-    const key = metadata?.key as string | undefined;
-    const kind = metadata?.kind as ("subscription" | "one_time") | undefined;
+    const userId = metadata.userId;
+    const key = metadata.key;
+    const kind = metadata.kind;
 
     if (!userId || !key || !kind) {
       // Don't log details to avoid PII exposure
@@ -118,7 +195,7 @@ export async function POST(req: NextRequest) {
 
     let creditsToGrant = 0;
     let planKey: PlanKey | null = null;
-    let paymentType: "one_time" | "subscription" = kind;
+    const paymentType: "one_time" | "subscription" = kind;
     let scheduleResetContext: {
       subscriptionId: string;
       schedule: NonNullable<ReturnType<typeof getGrantSchedule>>;
@@ -309,10 +386,10 @@ export async function POST(req: NextRequest) {
               totalCreditsRemaining: scheduleResetContext.totalCreditsRemaining,
               nextGrantAt: scheduleResetContext.nextGrantAt,
             },
-            tx as any,
+            tx,
           );
         } else {
-          await deleteSubscriptionSchedule(subscriptionId, tx as any);
+          await deleteSubscriptionSchedule(subscriptionId, tx);
         }
       }
     });
@@ -346,9 +423,9 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (e: any) {
+  } catch (error: unknown) {
     // Log only critical errors
-    console.error("[Creem Webhook] Critical error:", e?.message || "Unknown error");
+    console.error("[Creem Webhook] Critical error:", getErrorMessage(error));
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
 }

@@ -91,12 +91,20 @@ vi.mock("framer-motion", () => ({
       get: (_target, tag) => {
         return ({
           children,
-          initial: _initial,
-          animate: _animate,
-          transition: _transition,
+          initial,
+          animate,
+          transition,
           ...props
-        }: React.PropsWithChildren<Record<string, unknown>>) =>
-          React.createElement(typeof tag === "string" ? tag : "div", props, children);
+        }: React.PropsWithChildren<Record<string, unknown>>) => {
+          void initial;
+          void animate;
+          void transition;
+          return React.createElement(
+            typeof tag === "string" ? tag : "div",
+            props,
+            children
+          );
+        };
       },
     }
   ),

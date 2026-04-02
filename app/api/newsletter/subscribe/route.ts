@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
             audienceId: process.env.RESEND_AUDIENCE_ID,
             unsubscribed: false,
           });
-        } catch (audienceError) {
+        } catch {
           // If contact doesn't exist, create it
           try {
             await resend.contacts.create({
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: error.errors[0].message },
+        { message: error.issues[0].message },
         { status: 400 }
       );
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 export const InfiniteMovingCards = ({
   direction = "left",
@@ -17,7 +17,6 @@ export const InfiniteMovingCards = ({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const hasInitialized = React.useRef(false);
-  const [start, setStart] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || !scrollerRef.current || hasInitialized.current) {
@@ -31,7 +30,7 @@ export const InfiniteMovingCards = ({
     });
 
     hasInitialized.current = true;
-    setStart(true);
+    scrollerRef.current.dataset.ready = "true";
   }, []);
 
   useEffect(() => {
@@ -62,7 +61,7 @@ export const InfiniteMovingCards = ({
         ref={scrollerRef}
         className={cn(
           " flex min-w-full shrink-0 gap-4 py-4 w-max flex-nowrap",
-          start && "animate-scroll [animation-play-state:running]",
+          "data-[ready=true]:animate-scroll data-[ready=true]:[animation-play-state:running]",
           pauseOnHover && "group-hover:[animation-play-state:paused]"
         )}
       >

@@ -7,22 +7,27 @@ import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/button";
 import { Background } from "@/components/background";
 import NextImage from "next/image";
+import type {
+  ApiErrorResponse,
+  UploadImageResponse,
+  UserProfileResponse,
+  VideoGenerationResponsePayload,
+  VideoStatusResponsePayload,
+} from "@/lib/client-api";
+import { getApiErrorMessage, getErrorMessage } from "@/lib/error-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Sparkles, 
   AlertCircle, 
   Loader2, 
   CreditCard,
   Video,
   Download,
   Upload,
-  Check,
   X,
   Play,
   Image as ImageIcon,
   FileVideo,
   Settings,
-  Clock,
   Maximize,
   ChevronDown,
   Zap,
@@ -109,7 +114,6 @@ export default function VideoPage() {
   const [videoWatermark, setVideoWatermark] = useState(true);
   const [generatedVideos, setGeneratedVideos] = useState<GenerationResult[]>([]);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -120,7 +124,6 @@ export default function VideoPage() {
   // 轮播相关状态
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [videoLoaded, setVideoLoaded] = useState<Record<string, boolean>>({});
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -136,9 +139,6 @@ export default function VideoPage() {
         const videoElement = document.createElement('video');
         videoElement.src = video.resultUrl;
         videoElement.preload = 'auto';
-        videoElement.onloadeddata = () => {
-          setVideoLoaded(prev => ({ ...prev, [video.id]: true }));
-        };
       }
     });
   }, []);
@@ -152,7 +152,7 @@ export default function VideoPage() {
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as UserProfileResponse;
         setRemainingCredits(data.user.credits);
       } else if (response.status === 401 || response.status === 403) {
         setRemainingCredits(null);
@@ -247,11 +247,11 @@ export default function VideoPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate video");
+        const errorData = (await response.json()) as ApiErrorResponse;
+        throw new Error(getApiErrorMessage(errorData, "Failed to generate video"));
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as VideoGenerationResponsePayload;
       
       const newVideo: GenerationResult = {
         id: data.id,
@@ -276,11 +276,12 @@ export default function VideoPage() {
       // Start polling for video status
       pollVideoStatus(data.id, data.taskId);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error generating video:", error);
-      setError(error.message);
+      const message = getErrorMessage(error, "Failed to generate video");
+      setError(message);
       
-      if (error.message?.includes("credits")) {
+      if (message.includes("credits")) {
         setError(t('insufficientCredits'));
       }
       // 出错时恢复预设视频
@@ -304,7 +305,7 @@ export default function VideoPage() {
           throw new Error("Failed to check video status");
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as VideoStatusResponsePayload;
 
         setGeneratedVideos(prev => prev.map(video => 
           video.id === historyId
@@ -340,7 +341,6 @@ export default function VideoPage() {
 
     if (file && file.type.startsWith("image/")) {
       try {
-        setIsUploadingImage(true);
         setError(null);
         
         // Create preview
@@ -360,19 +360,17 @@ export default function VideoPage() {
         });
         
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          const error = (await response.json()) as ApiErrorResponse;
+          throw new Error(getApiErrorMessage(error, "Upload failed"));
         }
         
-        const data = await response.json();
+        const data = (await response.json()) as UploadImageResponse;
         setUploadedImageUrl(data.url);
         console.log('Image uploaded:', data.url);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Upload error:', error);
-        setError(error.message || 'Failed to upload image');
+        setError(getErrorMessage(error, 'Failed to upload image'));
         setUploadedImagePreview(null);
-      } finally {
-        setIsUploadingImage(false);
       }
     }
   };
@@ -382,13 +380,6 @@ export default function VideoPage() {
     setUploadedImagePreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleGenerateVideo();
     }
   };
 
@@ -811,7 +802,6 @@ export default function VideoPage() {
                           muted
                           playsInline
                           className="hidden"
-                          onLoadedData={() => setVideoLoaded(prev => ({ ...prev, [video.id]: true }))}
                         />
                       );
                     })}

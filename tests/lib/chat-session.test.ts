@@ -3,6 +3,12 @@ import {
   getOrCreateOwnedChatSession,
 } from "@/lib/chat-session";
 
+type ChatSessionResolverDeps = NonNullable<
+  Parameters<typeof getOrCreateOwnedChatSession>[1]
+>;
+
+type ChatSessionDatabase = NonNullable<ChatSessionResolverDeps["database"]>;
+
 describe("getOrCreateOwnedChatSession", () => {
   it("rejects access to a chat session owned by another user", async () => {
     const insertValues = vi.fn();
@@ -11,7 +17,7 @@ describe("getOrCreateOwnedChatSession", () => {
       insert: vi.fn(() => ({
         values: insertValues,
       })),
-    } as any;
+    } as ChatSessionDatabase;
 
     const result = await getOrCreateOwnedChatSession(
       {
@@ -39,7 +45,7 @@ describe("getOrCreateOwnedChatSession", () => {
       insert: vi.fn(() => ({
         values: vi.fn(),
       })),
-    } as any;
+    } as ChatSessionDatabase;
 
     const result = await getOrCreateOwnedChatSession(
       {
@@ -65,7 +71,7 @@ describe("getOrCreateOwnedChatSession", () => {
       insert: vi.fn(() => ({
         values,
       })),
-    } as any;
+    } as ChatSessionDatabase;
 
     const result = await getOrCreateOwnedChatSession(
       {

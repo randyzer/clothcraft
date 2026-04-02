@@ -11,16 +11,16 @@ export function TestimonialColumnContainer({
   shift?: number;
   children: React.ReactNode;
 }) {
-  let columnRef = useRef<React.ElementRef<"div">>(null);
-  let [columnHeight, setColumnHeight] = useState(0);
-  let duration = `${columnHeight * shift}ms`;
+  const columnRef = useRef<React.ElementRef<"div">>(null);
+  const [columnHeight, setColumnHeight] = useState(0);
+  const duration = `${columnHeight * shift}ms`;
 
   useEffect(() => {
     if (!columnRef.current) {
       return;
     }
 
-    let resizeObserver = new window.ResizeObserver(() => {
+    const resizeObserver = new window.ResizeObserver(() => {
       setColumnHeight(columnRef.current?.offsetHeight ?? 0);
     });
 

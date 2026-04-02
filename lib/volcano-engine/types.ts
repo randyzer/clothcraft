@@ -37,6 +37,18 @@ export interface ChatResponse {
   };
 }
 
+export interface ChatStreamResponseChunk {
+  choices?: Array<{
+    delta?: {
+      content?: string;
+    };
+  }>;
+}
+
+export interface ChatStreamDoneChunk {
+  done: true;
+}
+
 export interface ImageGenerationRequest {
   model: string;
   prompt: string;
@@ -81,7 +93,22 @@ export interface VolcanoEngineTaskResult {
   url?: string;
   cover_image_url?: string;
   error?: string;
-  [key: string]: any;
+  video?: Array<{
+    url?: string;
+  }>;
+  videos?: Array<{
+    url?: string;
+  }>;
+  output?: {
+    video_url?: string;
+    url?: string;
+    error?: string;
+  };
+  contents?: Array<{
+    type?: string;
+    url?: string;
+  }>;
+  [key: string]: unknown;
 }
 
 export interface VolcanoEngineTaskData {
@@ -90,7 +117,7 @@ export interface VolcanoEngineTaskData {
   task_status_text?: string;
   result?: VolcanoEngineTaskResult;
   error?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface VideoGenerationResponse {
@@ -99,8 +126,18 @@ export interface VideoGenerationResponse {
   request_id?: string;
   id?: string;
   status?: VolcanoEngineTaskStatus;
+  error?: string;
   data?: VolcanoEngineTaskData;
-  [key: string]: any;
+  content?: {
+    video_url?: string;
+  };
+  output?: {
+    video_url?: string;
+    url?: string;
+    error?: string;
+  };
+  url?: string;
+  [key: string]: unknown;
 }
 
 export interface VideoStatusRequest {
@@ -123,7 +160,7 @@ export interface GenerationHistory {
   result: string; // URL
   status: 'pending' | 'processing' | 'completed' | 'failed';
   creditsUsed: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }

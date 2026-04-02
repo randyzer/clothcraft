@@ -45,6 +45,14 @@ export interface SendEmailOptions {
   replyTo?: string;
 }
 
+export interface PurchaseEmailDetails {
+  orderId: string;
+  plan: string;
+  amount: string;
+  credits: number;
+  type: "subscription" | "one_time";
+}
+
 export async function sendEmail({
   to,
   subject,
@@ -155,7 +163,7 @@ export async function sendWelcomeEmail(email: string, name?: string) {
 }
 
 // 发送订单成功邮件
-export async function sendPurchaseEmail(email: string, orderDetails: any) {
+export async function sendPurchaseEmail(email: string, orderDetails: PurchaseEmailDetails) {
   const planName = orderDetails.type === 'subscription' 
     ? `${orderDetails.plan} Subscription` 
     : `${orderDetails.credits} Credits Pack`;

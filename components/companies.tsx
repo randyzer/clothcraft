@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 
 export const Companies = () => {
   const t = useTranslations('companies');
-  let [logos, setLogos] = useState([
+  const [logos, setLogos] = useState([
     [
       {
         title: "netflix",

@@ -10,6 +10,10 @@ import { getOrCreateOwnedChatSession } from "@/lib/chat-session";
 import { createCreditCompensation } from "@/lib/credit-compensation";
 import { getActiveSessionUser } from "@/lib/auth/session";
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Authenticate user
@@ -147,8 +151,11 @@ export async function POST(req: NextRequest) {
             for (const line of lines) {
               const parsed = parseSSEChunk(line);
               if (parsed) {
-                if (parsed.done) {
-                  break;
+                if ("done" in parsed) {
+                  if (parsed.done) {
+                    break;
+                  }
+                  continue;
                 }
                 const content = parsed.choices?.[0]?.delta?.content || '';
                 if (content) {
@@ -190,12 +197,12 @@ export async function POST(req: NextRequest) {
           })}\n\n`));
           
           controller.close();
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error("Stream error:", error);
           await compensation.compensate();
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
             type: 'error',
-            error: error.message || "Failed to process chat" 
+            error: getErrorMessage(error, "Failed to process chat"),
           })}\n\n`));
           controller.close();
         }
@@ -210,10 +217,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Chat API error:", error);
     return new Response(JSON.stringify({ 
-      error: error.message || "Failed to process chat" 
+      error: getErrorMessage(error, "Failed to process chat"),
     }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }

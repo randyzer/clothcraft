@@ -2,32 +2,27 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/button";
 import { Container } from "@/components/container";
 import { Background } from "@/components/background";
 import { motion } from "framer-motion";
 import { getDefaultOneTimePack } from "@/lib/billing-display";
-
-interface CreditRecord {
-  id: string;
-  amount: number;
-  type: string;
-  reason: string;
-  createdAt: string;
-  paymentId: string | null;
-}
+import type {
+  ClientUserProfile,
+  CreditHistoryRecord,
+  CreditHistoryResponse,
+  UserProfileResponse,
+} from "@/lib/client-api";
 
 export default function CreditsPage() {
-  const router = useRouter();
   const session = useSession();
   const locale = useLocale();
   const t = useTranslations('credits');
   const tCommon = useTranslations('common');
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<ClientUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [creditHistory, setCreditHistory] = useState<CreditRecord[]>([]);
+  const [creditHistory, setCreditHistory] = useState<CreditHistoryRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -39,7 +34,7 @@ export default function CreditsPage() {
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as UserProfileResponse;
         setUserProfile(data.user);
       }
     } catch (error) {
@@ -56,7 +51,7 @@ export default function CreditsPage() {
       const offset = (pageNum - 1) * limit;
       const response = await fetch(`/api/user/credits/history?limit=${limit}&offset=${offset}`);
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as CreditHistoryResponse;
         if (append) {
           setCreditHistory(prev => [...prev, ...data.history]);
         } else {

@@ -1,19 +1,22 @@
 import { cn } from "@/lib/utils";
-import { AnimationProps, MotionProps } from "framer-motion";
+import { MotionProps } from "framer-motion";
 import React from "react";
+
+type SubheadingTag = "p" | "span" | "div";
+
+type SubheadingProps = {
+  className?: string;
+  as?: SubheadingTag;
+  children: React.ReactNode;
+} & MotionProps &
+  React.HTMLAttributes<HTMLElement>;
 
 export const Subheading = ({
   className,
   as: Tag = "p",
   children,
   ...props
-}: {
-  className?: string;
-  as?: any;
-  children: any;
-  props?: React.HTMLAttributes<HTMLHeadingElement | AnimationProps>;
-} & MotionProps &
-  React.HTMLAttributes<HTMLHeadingElement | AnimationProps>) => {
+}: SubheadingProps) => {
   return (
     <Tag
       className={cn(
@@ -21,6 +24,7 @@ export const Subheading = ({
         "text-muted-foreground text-center font-normal",
         className
       )}
+      {...props}
     >
       {children}
     </Tag>

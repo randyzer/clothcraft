@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useLocale } from 'next-intl';
 
 import { useSession } from "@/lib/auth-client";
@@ -15,7 +15,7 @@ export function SessionGuard({ children }: { children: React.ReactNode }) {
     if (!session.isPending && !session.data) {
       router.replace(`/${locale}/login`);
     }
-  }, [router, session.data, session.isPending]);
+  }, [locale, router, session.data, session.isPending]);
 
   if (session.isPending) {
     return (
