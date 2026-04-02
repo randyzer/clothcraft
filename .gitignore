@@ -55,6 +55,7 @@ Desktop.ini
 
 # local documentation
 .local-docs/
+.mcp.json
 
 # fumadocs generated
 .source/
