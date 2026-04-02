@@ -2,17 +2,21 @@ import { z } from "zod";
 
 export const contactSchema = z.object({
   name: z
-    .string({ required_error: "Please enter your name" })
+    .string({ error: "Please enter your name" })
+    .trim()
     .min(1, "Please enter your name"),
   email: z
-    .string({ required_error: "Please enter email" })
-    .email("Please enter valid email")
-    .min(1, "Please enter email"),
+    .string({ error: "Please enter email" })
+    .trim()
+    .min(1, "Please enter email")
+    .email("Please enter valid email"),
   company: z
-    .string({ required_error: "Please enter your company's name" })
+    .string({ error: "Please enter your company's name" })
+    .trim()
     .min(1, "Please enter your company's name"),
   message: z
-    .string({ required_error: "Please enter your message" })
+    .string({ error: "Please enter your message" })
+    .trim()
     .min(1, "Please enter your message"),
 });
 

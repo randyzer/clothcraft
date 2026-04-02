@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
 import { db } from "./db";
 import { refundCredits } from "./credits";
+import { getGoogleAuthProvider } from "./auth/google-auth";
 
 const defaultTrustedOrigins = ["http://localhost:3000"];
 
@@ -11,6 +12,8 @@ const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
       .map((origin) => origin.trim())
       .filter(Boolean)
   : defaultTrustedOrigins;
+
+const googleAuthProvider = getGoogleAuthProvider();
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -23,13 +26,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-
-  socialProviders: {
-    google: {
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    },
-  },
+  ...(googleAuthProvider
+    ? {
+        socialProviders: {
+          google: googleAuthProvider,
+        },
+      }
+    : {}),
 
   trustedOrigins,
 

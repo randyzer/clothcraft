@@ -2,12 +2,14 @@ import { SignupForm } from "@/features/auth/components/signup-form";
 import { Metadata } from "next";
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from "@/i18n.config";
+import { isGoogleAuthEnabled } from "@/lib/auth/google-auth";
 
-export async function generateMetadata({
-  params
-}: {
-  params: { locale: Locale }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ locale: Locale }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const t = await getTranslations({ locale: params.locale, namespace: 'seo' });
 
   return {
@@ -20,5 +22,5 @@ export async function generateMetadata({
 }
 
 export default function SignupPage() {
-  return <SignupForm />;
+  return <SignupForm showGoogleAuth={isGoogleAuthEnabled()} />;
 }

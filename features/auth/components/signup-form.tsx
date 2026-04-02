@@ -14,7 +14,11 @@ import { FormTextField } from "@/features/forms/components/form-text-field";
 import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons";
 import { SignupInput, signupSchema } from "@/features/auth/schemas";
 
-export function SignupForm() {
+interface SignupFormProps {
+  showGoogleAuth?: boolean;
+}
+
+export function SignupForm({ showGoogleAuth = true }: SignupFormProps) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('auth.signup');
@@ -60,7 +64,7 @@ export function SignupForm() {
 
       // 跳转到邮箱验证提示页面，而不是直接登录
       router.push(`/${locale}/check-email`);
-    } catch (err) {
+    } catch {
       setError(t('errors.signupFailed'));
     } finally {
       setIsLoading(false);
@@ -74,7 +78,7 @@ export function SignupForm() {
         provider: "google",
         callbackURL: "/",
       });
-    } catch (err) {
+    } catch {
       setError(t('errors.googleSignupFailed'));
     } finally {
       setIsLoading(false);
@@ -98,7 +102,11 @@ export function SignupForm() {
           </Link>
         </p>
       }
-      socialSlot={<SocialAuthButtons onGoogleSignIn={handleGoogleSignIn} isLoading={isLoading} />}
+      socialSlot={
+        showGoogleAuth ? (
+          <SocialAuthButtons onGoogleSignIn={handleGoogleSignIn} isLoading={isLoading} />
+        ) : undefined
+      }
     >
       <FormTextField
         control={form.control}

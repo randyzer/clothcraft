@@ -14,7 +14,11 @@ import { FormTextField } from "@/features/forms/components/form-text-field";
 import { SocialAuthButtons } from "@/features/auth/components/social-auth-buttons";
 import { LoginInput, loginSchema } from "@/features/auth/schemas";
 
-export function LoginForm() {
+interface LoginFormProps {
+  showGoogleAuth?: boolean;
+}
+
+export function LoginForm({ showGoogleAuth = true }: LoginFormProps) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('auth.login');
@@ -45,7 +49,7 @@ export function LoginForm() {
       }
 
       router.push(`/${locale}/`);
-    } catch (err) {
+    } catch {
       setError(t('errors.loginFailed'));
     } finally {
       setIsLoading(false);
@@ -59,7 +63,7 @@ export function LoginForm() {
         provider: "google",
         callbackURL: "/",
       });
-    } catch (err) {
+    } catch {
       setError(t('errors.googleLoginFailed'));
     } finally {
       setIsLoading(false);
@@ -83,7 +87,11 @@ export function LoginForm() {
           </Link>
         </p>
       }
-      socialSlot={<SocialAuthButtons onGoogleSignIn={handleGoogleSignIn} isLoading={isLoading} />}
+      socialSlot={
+        showGoogleAuth ? (
+          <SocialAuthButtons onGoogleSignIn={handleGoogleSignIn} isLoading={isLoading} />
+        ) : undefined
+      }
     >
       <FormTextField
         control={form.control}
