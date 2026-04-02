@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useMotionValueEvent, useScroll, motion, AnimatePresence } from "framer-motion";
 import { IoIosClose, IoIosMenu } from "react-icons/io";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { ChevronRight, MessageSquare, Image as ImageIcon, Video } from "lucide-react";
 
 import { Button } from "@/components/button";
@@ -15,8 +15,7 @@ import { useSession, signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from "@/lib/utils";
-import type { NavigationItem } from "@/features/navigation/types";
-import { marketingNavigationKeys, appNavigationKeys } from "@/features/navigation/config";
+import { marketingNavigationKeys } from "@/features/navigation/config";
 
 const iconMap = {
   MessageSquare: MessageSquare,
@@ -147,6 +146,8 @@ export const MobileNavbar = () => {
                   <Link
                     href={`/${locale}${navItem.href}`}
                     onClick={() => setOpen(false)}
+                    target={navItem.target}
+                    rel={navItem.target === "_blank" ? "noopener noreferrer" : undefined}
                     className="relative block w-full py-2 hover:opacity-70 transition-opacity"
                   >
                     <span className="block text-xl text-foreground font-semibold">

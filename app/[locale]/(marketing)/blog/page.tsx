@@ -9,11 +9,12 @@ import { getTranslations } from 'next-intl/server';
 import { type Locale } from '@/i18n.config';
 import { generatePageMetadata } from "@/lib/metadata";
 
-export async function generateMetadata({
-  params
-}: {
-  params: { locale: Locale }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ locale: Locale }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const t = await getTranslations({ locale: params.locale, namespace: 'blog' });
 
   return generatePageMetadata({
@@ -25,14 +26,15 @@ export async function generateMetadata({
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     locale: Locale;
-  };
+  }>;
 }
 
-export default async function ArticlesIndex({ params }: PageProps) {
+export default async function ArticlesIndex(props: PageProps) {
+  const params = await props.params;
   const t = await getTranslations({ locale: params.locale, namespace: 'blog' });
-  let blogs = await getAllBlogs(params.locale);
+  const blogs = await getAllBlogs(params.locale);
 
   return (
     <div className="relative overflow-hidden py-20 md:py-0">

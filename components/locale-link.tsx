@@ -1,13 +1,12 @@
 "use client";
 
+import type { ComponentProps, ReactNode } from "react";
+import Link from "next/link";
 import { useLocale } from 'next-intl';
-import { Link } from 'next-view-transitions';
 
-interface LocaleLinkProps {
+interface LocaleLinkProps extends Omit<ComponentProps<typeof Link>, "href"> {
   href: string;
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
+  children: ReactNode;
 }
 
 export function LocaleLink({ href, children, ...props }: LocaleLinkProps) {

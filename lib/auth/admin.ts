@@ -7,7 +7,7 @@ import { getActiveSessionUser } from "@/lib/auth/session";
  * @returns {Promise<boolean>} true if the user is an admin, false otherwise
  */
 export async function isAdmin(): Promise<boolean> {
-  const access = await getActiveSessionUser(headers());
+  const access = await getActiveSessionUser(await headers());
   if (!access.ok) {
     return false;
   }
@@ -31,7 +31,7 @@ export async function requireAdmin() {
  * Get current user with admin status
  */
 export async function getCurrentUserWithRole() {
-  const access = await getActiveSessionUser(headers());
+  const access = await getActiveSessionUser(await headers());
   if (!access.ok) {
     return null;
   }

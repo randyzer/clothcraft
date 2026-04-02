@@ -7,16 +7,20 @@ import {
 import type { Locale } from "@/i18n.config";
 
 interface AdminUsersPageProps {
-  params: {
+  params: Promise<{
     locale: Locale;
-  };
-  searchParams?: AdminUsersDirectorySearchParams;
+  }>;
+  searchParams?: Promise<AdminUsersDirectorySearchParams>;
 }
 
-export default async function AdminUsersPage({
-  searchParams,
-  params: { locale },
-}: AdminUsersPageProps) {
+export default async function AdminUsersPage(props: AdminUsersPageProps) {
+  const params = await props.params;
+
+  const {
+    locale
+  } = params;
+
+  const searchParams = await props.searchParams;
   const t = await getTranslations({ locale, namespace: "Admin.users" });
   const directory = await getAdminUsersDirectory(searchParams);
 

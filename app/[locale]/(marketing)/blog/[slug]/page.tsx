@@ -5,10 +5,10 @@ import { getAllBlogs, getBlogModule } from "@/lib/blog";
 import { locales, type Locale } from "@/i18n.config";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     locale: Locale;
     slug: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -22,7 +22,8 @@ export async function generateStaticParams() {
   );
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const params = await props.params;
   const { slug, locale } = params;
 
   const blogModule = await getBlogModule(slug, locale);
@@ -46,7 +47,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return metadata;
 }
 
-export default async function BlogPostPage({ params }: PageProps) {
+export default async function BlogPostPage(props: PageProps) {
+  const params = await props.params;
   const { slug, locale } = params;
 
   const blogModule = await getBlogModule(slug, locale);

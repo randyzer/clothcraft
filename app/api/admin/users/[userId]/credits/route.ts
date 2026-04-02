@@ -4,10 +4,8 @@ import { user, creditLedger } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/admin";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
   try {
     await requireAdmin();
     

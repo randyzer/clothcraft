@@ -4,7 +4,7 @@ import { getActiveSessionUser } from "@/lib/auth/session";
 
 export async function GET() {
   try {
-    const access = await getActiveSessionUser(headers());
+    const access = await getActiveSessionUser(await headers());
     if (!access.ok) {
       return NextResponse.json({ isAdmin: false });
     }

@@ -1,15 +1,11 @@
-import fs from "node:fs";
-import path from "node:path";
-
-import rehypePrism from "@mapbox/rehype-prism";
-import nextMDX from "@next/mdx";
-import remarkGfm from "remark-gfm";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createMDX } from 'fumadocs-mdx/next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./lib/i18n.ts');
-
-const pnpmManagedPath = path.join(process.cwd(), "node_modules", ".pnpm");
-const snapshotManagedPaths = fs.existsSync(pnpmManagedPath) ? [pnpmManagedPath] : [];
+const withMDX = createMDX();
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -30,19 +26,9 @@ const nextConfig = {
     ],
   },
   pageExtensions: ["ts", "tsx", "mdx"],
-  webpack(config) {
-    config.snapshot ??= {};
-    config.snapshot.managedPaths = snapshotManagedPaths;
-    return config;
+  turbopack: {
+    root: rootDir,
   },
 };
-
-const withMDX = nextMDX({
-  extension: /\.mdx?$/,
-  options: {
-    remarkPlugins: [remarkGfm],
-    rehypePlugins: [rehypePrism],
-  },
-});
 
 export default withNextIntl(withMDX(nextConfig));

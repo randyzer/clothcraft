@@ -11,11 +11,17 @@ import { getTranslations } from 'next-intl/server';
 import type { Locale } from "@/i18n.config";
 import { generatePageMetadata } from "@/lib/metadata";
 
-export async function generateMetadata({
-  params: { locale },
-}: {
-  params: { locale: Locale };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ locale: Locale }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
+
+  const {
+    locale
+  } = params;
+
   const t = await getTranslations({ locale, namespace: 'hero' });
 
   return generatePageMetadata({
@@ -27,7 +33,6 @@ export async function generateMetadata({
 }
 
 export default function Home() {
-  console.log('[locale]/(marketing)/page rendered');
   return (
     <div className="relative">
       <div className="absolute inset-0 h-full w-full overflow-hidden ">

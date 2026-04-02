@@ -1,7 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { locales, defaultLocale, localePrefix } from './i18n.config';
 
-export default createMiddleware({
+export const proxy = createMiddleware({
   locales,
   defaultLocale,
   localePrefix

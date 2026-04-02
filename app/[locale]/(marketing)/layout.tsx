@@ -4,11 +4,12 @@ import { Footer } from "@/components/footer";
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from "@/i18n.config";
 
-export async function generateMetadata({
-  params
-}: {
-  params: { locale: Locale }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ locale: Locale }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const t = await getTranslations({ locale: params.locale, namespace: 'seo' });
 
   return {

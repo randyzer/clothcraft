@@ -1,5 +1,5 @@
-import { Link } from "next-view-transitions";
 import React from "react";
+import Link from "next/link";
 import { BlurImage } from "./blur-image";
 import { Logo } from "./Logo";
 import Image from "next/image";
