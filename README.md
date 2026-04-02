@@ -76,7 +76,7 @@ After you receive access, continue with the setup below.
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/liuxiaopai-ai/sistine-starter-vibe-to-production.git
+git clone https://github.com/Idea-To-Business/sistine-starter-vibe-to-production.git
 cd sistine-starter-vibe-to-production
 ```
 
@@ -240,7 +240,7 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 1. **克隆仓库**
 ```bash
-git clone https://github.com/liuxiaopai-ai/sistine-starter-vibe-to-production.git
+git clone https://github.com/Idea-To-Business/sistine-starter-vibe-to-production.git
 cd sistine-starter-vibe-to-production
 ```
 
@@ -352,7 +352,7 @@ MIT 许可证 - 详情见 [LICENSE](./LICENSE)。
 <div align="center">
   <h3>🚀 Start Vibe Coding Today!</h3>
   <p>
-    <a href="https://github.com/liuxiaopai-ai/sistine-starter-vibe-to-production">GitHub</a> •
+    <a href="https://github.com/Idea-To-Business/sistine-starter-vibe-to-production">GitHub</a> •
     <a href="https://raphael.app">Website</a> •
     <a href="https://twitter.com/bourneliu66">Twitter</a>
   </p>
