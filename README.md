@@ -60,9 +60,9 @@ With Sistine Starter, you can:
 ### 🚀 Quick Start
 
 #### Prerequisites
-- Node.js 18+
+- Node.js 20.9+
+- pnpm 10+
 - PostgreSQL database
-- AI coding assistant (Cursor, Claude Code, or Windsurf)
 
 #### Get Access
 
@@ -74,7 +74,11 @@ After you receive access, continue with the setup below.
 
 #### Installation
 
-1. **Clone the repository**
+1. **Get the source code**
+
+If you already received a source ZIP through the course community, unzip it and enter the project directory.
+
+If you want to fetch it with Git:
 ```bash
 git clone https://github.com/Idea-To-Business/sistine-starter-vibe-to-production.git
 cd sistine-starter-vibe-to-production
@@ -88,6 +92,13 @@ pnpm install
 3. **Set up environment variables**
 ```bash
 cp .env.example .env.local
+```
+
+If you do not have Node.js or pnpm installed yet:
+```bash
+node --version
+npm install -g pnpm
+pnpm --version
 ```
 
 Edit `.env.local` with your configuration:
@@ -224,9 +235,9 @@ MIT License - see [LICENSE](./LICENSE) for details.
 ### 🚀 快速开始
 
 #### 前置要求
-- Node.js 18+
+- Node.js 20.9+
+- pnpm 10+
 - PostgreSQL 数据库
-- AI 编程助手（Cursor、Claude Code 或 Windsurf）
 
 #### 获取访问权限
 
@@ -238,7 +249,11 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 #### 安装步骤
 
-1. **克隆仓库**
+1. **获取项目源码**
+
+如果你已经通过课程社区拿到源码压缩包，先解压并进入项目目录即可。
+
+如果你想通过 Git 获取源码：
 ```bash
 git clone https://github.com/Idea-To-Business/sistine-starter-vibe-to-production.git
 cd sistine-starter-vibe-to-production
@@ -252,6 +267,13 @@ pnpm install
 3. **设置环境变量**
 ```bash
 cp .env.example .env.local
+```
+
+如果你还没有安装 Node.js 或 pnpm，可以先执行：
+```bash
+node --version
+npm install -g pnpm
+pnpm --version
 ```
 
 编辑 `.env.local` 配置：

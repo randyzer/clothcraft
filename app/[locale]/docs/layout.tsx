@@ -3,6 +3,7 @@ import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { ReactNode } from 'react';
 import { source } from '@/lib/source';
 import { getDocsBaseOptions, docsI18nUI } from '@/lib/docs-ui';
+import { localizeDocsPageTree } from '@/lib/docs-page-tree';
 
 export default async function Layout({
   params,
@@ -21,7 +22,7 @@ export default async function Layout({
       <RootProvider i18n={docsI18nUI.provider(locale)}>
         <DocsLayout
           {...getDocsBaseOptions(locale)}
-          tree={source.getPageTree(locale)}
+          tree={localizeDocsPageTree(locale, source.getPageTree(locale))}
         >
           {children}
         </DocsLayout>

@@ -104,6 +104,17 @@ body {
   width: 100%;
 }
 
+/* Fumadocs language popovers are translucent by default, which lets sidebar
+   labels show through the menu on the docs layout. Keep the menu opaque. */
+[data-radix-popper-content-wrapper] {
+  z-index: 100 !important;
+}
+
+[data-radix-popper-content-wrapper] [role="dialog"] {
+  background-color: var(--color-fd-popover) !important;
+  backdrop-filter: none !important;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
