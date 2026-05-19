@@ -9,7 +9,7 @@ export type TryOnLimits =
       watermark: true;
     }
   | {
-      monthlyGenerations: number;
+      dailyGenerations: number;
       garmentLimit: number;
       watermark: false;
     };
@@ -26,7 +26,7 @@ const BASE64_IMAGE_PATTERN = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/]
 export function getTryOnLimits(tier: TryOnTier): TryOnLimits {
   if (tier === "paid") {
     return {
-      monthlyGenerations: 200,
+      dailyGenerations: 20,
       garmentLimit: 3,
       watermark: false,
     };

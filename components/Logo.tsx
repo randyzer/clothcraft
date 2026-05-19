@@ -32,7 +32,7 @@ export const Logo = () => {
         {/* 教堂大门 */}
         <path
           d="M10.5 21V16C10.5 15.2 11.2 14.5 12 14.5C12.8 14.5 13.5 15.2 13.5 16V21"
-          stroke="hsl(var(--background))"
+          stroke="var(--background)"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -42,7 +42,7 @@ export const Logo = () => {
           cx="12"
           cy="10"
           r="1.5"
-          stroke="hsl(var(--background))"
+          stroke="var(--background)"
           strokeWidth="1"
           fill="none"
         />
@@ -53,7 +53,7 @@ export const Logo = () => {
           opacity="0.6"
         />
       </svg>
-      <span className="font-medium text-foreground">Sistine AI</span>
+      <span className="font-medium text-foreground">ClothCraft</span>
     </Link>
   );
 };

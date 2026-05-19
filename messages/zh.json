@@ -1,9 +1,9 @@
 {
   "common": {
     "brand": {
-      "name": "SISTINE",
-      "tagline": "Sistine AI & Sistine Labs",
-      "copyright": "版权所有 © 2025 Sistine AI & Sistine Labs",
+      "name": "ClothCraft",
+      "tagline": "面向创作者和店铺的 AI 换衣工具",
+      "copyright": "版权所有 © 2026 ClothCraft",
       "allRightsReserved": "保留所有权利"
     },
     "actions": {
@@ -66,15 +66,19 @@
   "hero": {
     "badge": "Seedream 驱动的 AI 换衣体验",
     "title": "AI 换衣服",
-    "description": "上传一张模特图和一张衣服图即可免费生成带水印试穿图；切换到付费模式，可组合最多三件衣服且无水印。",
+    "description": "上传模特图和衣服图，即可生成真实自然的 AI 换衣效果。免费用户输出带 ClothCraft 水印，付费用户可获得更高日额度和无水印成图。",
     "tryOn": {
       "tiers": {
         "free": "免费版",
         "paid": "付费版"
       },
       "rules": {
-        "free": "免费版：3 次/天，1 件衣服，有水印",
-        "paid": "付费版：200 次/月，最多 3 件衣服，无水印"
+        "free": "免费版：3 次/天，1 件衣服，ClothCraft 水印",
+        "paid": "付费版：20 次/天，最多 3 件衣服，无水印",
+        "remaining": "今日剩余 {remaining} 次（已用 {used} 次）"
+      },
+      "status": {
+        "anonymous": "登录后可用"
       },
       "model": {
         "title": "上传模特",
@@ -93,11 +97,11 @@
           "title": "上传衣服3",
           "helper": "付费模式可选"
         },
-        "locked": "切换到付费版后解锁"
+        "locked": "升级付费版后解锁"
       },
       "settings": {
         "title": "生成设置",
-        "watermarkOn": "免费版输出会带水印。",
+        "watermarkOn": "免费版输出会带 ClothCraft 水印。",
         "watermarkOff": "付费版输出不带水印。"
       },
       "result": {
@@ -107,42 +111,46 @@
       },
       "generate": {
         "button": "生成试穿图",
-        "loading": "生成中..."
+        "loading": "生成中...",
+        "login": "登录"
       },
       "errors": {
         "invalidFile": "请上传图片文件。",
         "upload": "图片读取失败。",
+        "entitlement": "获取换衣权限失败。",
+        "loginRequired": "请先登录，再使用 ClothCraft 生成换衣图。",
+        "limitReached": "今日换衣次数已用完。",
         "missingImages": "请先上传模特和至少一张衣服图。",
         "generate": "生成试穿图失败。"
       }
     }
   },
   "features": {
-    "title": "Vibe Coding 成功所需的一切功能",
-    "subtitle": "告别在样板代码上浪费时间。专注于描述您的独特功能，Sistine 会为您处理好底层基础。借助 AI 加速产品交付。",
+    "title": "AI 服装内容所需的核心能力",
+    "subtitle": "把模特图和衣服图快速合成为真实试穿视觉，用于商品图、店铺内容和社媒素材。",
     "items": {
       "aiOptimized": {
-        "title": "为 AI 辅助开发而生",
-        "description": "为 Cursor、Windsurf 和 Claude Code 等工具完美结构化。每个文件、每个组件都经过优化，便于 AI 理解和修改。"
+        "title": "保持模特一致",
+        "description": "在替换服装的同时，尽量保持模特身份、姿势、背景和光照自然一致。"
       },
       "zeroPipeline": {
-        "title": "从零到生产的完整流程",
-        "description": "身份验证、支付、数据库、部署——一切均已配置完毕。只需向您的 AI 助手发出指令，即可见证您的 SaaS 产品诞生。"
+        "title": "多件衣服组合",
+        "description": "付费用户单次可上传最多三件衣服，更适合完整穿搭和套装效果。"
       },
       "nonTechnical": {
-        "title": "对非技术背景的创始人友好",
-        "description": "分不清 React 和 Rails？没关系。只要您能清晰地描述您的想法，就能成功交付一款 SaaS 产品。"
+        "title": "创作者友好的流程",
+        "description": "直接在首页上传、生成、查看结果，不需要复杂工作台即可完成核心换衣。"
       },
       "productionGrade": {
-        "title": "从第一天起即达生产级别",
-        "description": "支持真实用户、真实支付、真实规模。基于 Next.js、PostgreSQL 和 Creem 构建——与价值数十亿美元公司使用的技术栈一致。"
+        "title": "清晰的免费和付费权益",
+        "description": "免费用户每天可生成带水印试穿图；付费用户获得无水印输出和更高日额度。"
       }
     }
   },
   "pricing": {
     "title": "AI 换衣定价",
     "subtitle": "围绕 Seedream 试穿体验设计的简单方案",
-    "description": "先用带水印的每日免费额度验证效果；需要更高月额度、无水印和单次最多三件衣服时，再升级到付费版。",
+    "description": "先用带 ClothCraft 水印的每日免费额度验证效果；需要更高日额度、无水印和单次最多三件衣服时，再升级到付费版。",
     "comparison": {
       "title": "方案对比",
       "rows": {
@@ -154,7 +162,7 @@
       },
       "values": {
         "freeGenerations": "3 次/天",
-        "paidGenerations": "200 次/月",
+        "paidGenerations": "20 次/天",
         "freeGarments": "1 件衣服",
         "paidGarments": "最多 3 件衣服",
         "watermarkIncluded": "有水印",
@@ -165,7 +173,7 @@
     },
     "details": {
       "freeGenerations": "3 次/天",
-      "paidGenerations": "200 次/月",
+      "paidGenerations": "20 次/天",
       "perMonth": "/ 月"
     },
     "tiers": {
@@ -182,10 +190,10 @@
       },
       "paid": {
         "name": "付费版",
-        "description": "适合创作者、店铺和团队制作更干净、更高频的试穿图。",
+        "description": "适合创作者、店铺和团队制作更干净、更高日额度的试穿图。",
         "cta": "升级付费版",
         "features": [
-          "每月 200 次生成",
+          "每天 20 次生成",
           "单次最多组合 3 件衣服",
           "输出无水印",
           "适合商品图、电商和社媒内容"
@@ -194,33 +202,33 @@
     }
   },
   "testimonials": {
-    "title": "来自 Vibe Coders 的成功故事",
-    "subtitle": "真实开发者与非技术背景创始人分享他们使用 Sistine 和 Vibe Coding 构建 AI SaaS 产品的经验。",
+    "title": "为服装内容团队而做",
+    "subtitle": "用 ClothCraft 快速探索穿搭效果、制作活动草稿并提升视觉内容产出效率。",
     "items": [
       {
         "name": "Alex Chen",
-        "quote": "我不是开发者，我是营销人员。但我使用 Sistine + Cursor 在 3 天内发布了我的 AI SaaS。现在每月收入 5000 美元。",
-        "designation": "营销经理转型创始人"
+        "quote": "ClothCraft 让我们在拍摄前就能预览穿搭组合，每次活动都能节省很多沟通时间。",
+        "designation": "服装营销负责人"
       },
       {
         "name": "Jordan Lee",
-        "quote": "我花了多年学习编码。现在我的非技术联合创始人使用 Vibe Coding 发布功能比我还快。这就是未来。",
-        "designation": "技术联合创始人"
+        "quote": "我们会先用它测试商品页视觉，再决定哪些造型值得进入正式拍摄。",
+        "designation": "电商运营"
       },
       {
         "name": "Alice Johnson",
-        "quote": "从想法到每月 1 万美元收入只用了 2 个月。全靠感觉，无需编码。Sistine 让我能与有资金支持的创业公司竞争。",
-        "designation": "连续创业者"
+        "quote": "免费版带水印很适合草稿，付费版无水印输出则适合做更干净的商品图实验。",
+        "designation": "独立创作者"
       },
       {
         "name": "Bob Smith",
-        "quote": "仅在本季度就构建并发布了 3 个不同的 AI SaaS 产品。使用 Sistine 进行 Vibe Coding 是我的秘密武器。",
-        "designation": "独立黑客"
+        "quote": "它让我们能为新品发布准备更多视觉方向，而不是每个想法都安排一次拍摄。",
+        "designation": "品牌创始人"
       },
       {
         "name": "Cathy Lee",
-        "quote": "我用普通英语向 Claude Code 描述功能。Sistine 处理其他一切。发布从未如此快速。",
-        "designation": "产品经理"
+        "quote": "首页流程足够简单，我们的内容团队不需要额外培训就能直接使用。",
+        "designation": "内容负责人"
       },
       {
         "name": "David Wright",
@@ -308,14 +316,14 @@
       "description": "元标签、Open Graph、站点地图和分析。为有机增长准备的一切。"
     },
     "vibeCoding": {
-      "title": "Vibe Coding 就绪",
-      "description": "针对 Cursor、Windsurf 和 Claude Code 进行了优化。AI 能理解每个组件。"
+      "title": "快速迭代视觉方向",
+      "description": "在投入拍摄时间和预算前，先快速生成不同穿搭方向。"
     }
   },
   "cta": {
-    "title": "准备好交付您的 AI SaaS 产品了吗？",
-    "description": "加入数百名开发者的行列，他们已经通过 Sistine 和 Vibe Coding 成功发布了自己的 SaaS 产品。",
-    "button": "获取代码"
+    "title": "准备好生成下一张穿搭视觉了吗？",
+    "description": "先用 ClothCraft 免费试穿，等需要无水印输出和更高日额度时再升级。",
+    "button": "开始使用 ClothCraft"
   },
   "auth": {
     "login": {
@@ -400,7 +408,7 @@
   },
   "demo": {
     "badge": "先试后买",
-    "title": "体验 Sistine AI",
+    "title": "体验 ClothCraft",
     "description": "无需注册即可测试我们强大的 AI 功能。获得 3 次免费试用机会，探索我们的能力。",
     "limitReached": "您已达到演示限制。立即注册以继续使用完整功能的 AI 工具！",
     "signUpNow": "立即注册",
@@ -723,7 +731,7 @@
     "title": "仪表盘",
     "welcome": "欢迎回来",
     "welcomeBonus": {
-      "title": "🎉 欢迎加入 Sistine!",
+      "title": "🎉 欢迎加入 ClothCraft!",
       "message": "恭喜您成功注册！我们已为您的账户赠送 300 积分新人礼包。",
       "description": "这些积分可用于体验我们的 AI 对话、图像生成、视频生成等功能。",
       "ctaButton": "立即体验",
@@ -756,8 +764,8 @@
         },
         "plans": {
           "free": "免费版",
-          "starterMonthly": "入门版 (月付)",
-          "starterYearly": "入门版 (年付)",
+          "starterMonthly": "ClothCraft 月付版",
+          "starterYearly": "ClothCraft 年付版",
           "proMonthly": "专业版 (月付)",
           "proYearly": "专业版 (年付)"
         },
@@ -917,8 +925,8 @@
     "subtitle": "我们很乐意倾听您的声音。给我们发送消息，我们会尽快回复。",
     "description": "请联系我们，我们会以光速回复您。",
     "testimonial": {
-      "title": "Sistine AI 被数千名用户使用",
-      "description": "在众多 AI 应用中，Sistine AI 以其顶级的 AI 能力脱颖而出。"
+      "title": "ClothCraft 帮助创作者更快测试穿搭",
+      "description": "用模特图和衣服图生成真实 AI 试穿视觉，核心流程直接在首页完成。"
     },
     "form": {
       "nameLabel": "姓名",

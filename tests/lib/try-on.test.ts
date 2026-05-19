@@ -20,7 +20,7 @@ describe("try-on rules", () => {
 
   it("limits paid users to three garments without watermark", () => {
     expect(getTryOnLimits("paid")).toEqual({
-      monthlyGenerations: 200,
+      dailyGenerations: 20,
       garmentLimit: 3,
       watermark: false,
     });

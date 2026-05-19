@@ -36,6 +36,12 @@ describe("billing config", () => {
     }
   });
 
+  it("uses the ClothCraft Creem product for the paid monthly plan", () => {
+    expect(subscriptionPlans.starter_monthly.creemPriceId).toBe(
+      "prod_3GN5nUWbg4rPrUC9J7Z1YX"
+    );
+  });
+
   it("keeps one-time packs positive and purchasable", () => {
     for (const pack of Object.values(oneTimePacks)) {
       expect(pack.credits).toBeGreaterThan(0);

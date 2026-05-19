@@ -5,6 +5,7 @@ import messages from "@/messages/en.json";
 import { Hero } from "@/components/hero";
 
 const routerPushMock = vi.fn();
+const useSessionMock = vi.fn();
 
 function getNestedValue(source: Record<string, unknown>, path: string) {
   return path.split(".").reduce<unknown>((value, key) => {
@@ -39,6 +40,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: routerPushMock,
   }),
+}));
+
+vi.mock("@/lib/auth-client", () => ({
+  useSession: () => useSessionMock(),
 }));
 
 vi.mock("next/link", () => ({
@@ -97,6 +102,7 @@ vi.mock("framer-motion", () => ({
 describe("Hero", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useSessionMock.mockReturnValue({ data: null });
   });
 
   it("renders the AI outfit try-on workspace in the homepage hero", () => {
@@ -111,17 +117,25 @@ describe("Hero", () => {
     expect(screen.getByText("Garment 1")).toBeInTheDocument();
     expect(screen.getByText("Garment 2")).toBeInTheDocument();
     expect(screen.getByText("Garment 3")).toBeInTheDocument();
-    expect(screen.getByText("Free: 3 generations/day, 1 garment, watermark")).toBeInTheDocument();
-    expect(screen.getByText("Paid: 200 generations/month, 3 garments, no watermark")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Generate try-on" })).toBeDisabled();
+    expect(screen.getByText("Free: 3 generations/day, 1 garment, ClothCraft watermark")).toBeInTheDocument();
+    expect(screen.getByText("Paid: 20 generations/day, 3 garments, no watermark")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Generate try-on" })).toBeEnabled();
   });
 
-  it("starts in paid mode so all three garment slots are available for core try-on testing", () => {
+  it("starts anonymous with paid-only garment slots locked", () => {
     render(<Hero />);
 
-    expect(screen.getByRole("button", { name: "Paid" })).toHaveClass("text-foreground");
-    expect(screen.getByRole("button", { name: /Garment 2/ })).not.toBeDisabled();
-    expect(screen.getByRole("button", { name: /Garment 3/ })).not.toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Paid" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Garment 2/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Garment 3/ })).toBeDisabled();
+  });
+
+  it("prompts anonymous users to sign in when they click generate", () => {
+    render(<Hero />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Generate try-on" }));
+
+    expect(screen.getByText("Sign in to generate ClothCraft try-ons.")).toBeInTheDocument();
   });
 
   it("keeps both generate icons mounted while switching loading state", () => {

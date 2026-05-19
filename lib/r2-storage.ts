@@ -54,6 +54,32 @@ async function uploadToR2(
   return `${STORAGE_PUBLIC_URL}/${key}`;
 }
 
+export async function uploadImageBuffer({
+  buffer,
+  userId,
+  type = "image",
+  contentType = "image/png",
+  extension,
+}: {
+  buffer: Buffer | Uint8Array;
+  userId: string;
+  type?: "image" | "video";
+  contentType?: string;
+  extension?: string;
+}): Promise<string> {
+  if (!isR2Configured()) {
+    const encoded = Buffer.from(buffer).toString("base64");
+    return `data:${contentType};base64,${encoded}`;
+  }
+
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(7);
+  const resolvedExtension = extension || getExtensionFromContentType(contentType);
+  const key = `${type}s/${userId}/${timestamp}_${random}.${resolvedExtension}`;
+
+  return uploadToR2(key, buffer, contentType);
+}
+
 /**
  * Delete file from R2 storage
  */

@@ -83,7 +83,7 @@ describe("marketing pricing", () => {
     expect(screen.getByText("$0")).toBeInTheDocument();
     expect(screen.getByText("$29")).toBeInTheDocument();
     expect(screen.getAllByText("3 generations per day").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("200 generations per month").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("20 generations per day").length).toBeGreaterThan(0);
     expect(screen.queryByRole("heading", { name: "Starter" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Pro" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Credits Pack" })).not.toBeInTheDocument();
@@ -95,7 +95,7 @@ describe("marketing pricing", () => {
     expect(screen.getByRole("columnheader", { name: "Free" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Paid" })).toBeInTheDocument();
     expect(screen.getByText("3 / day")).toBeInTheDocument();
-    expect(screen.getByText("200 / month")).toBeInTheDocument();
+    expect(screen.getByText("20 / day")).toBeInTheDocument();
     expect(screen.getByText("1 garment")).toBeInTheDocument();
     expect(screen.getByText("Up to 3 garments")).toBeInTheDocument();
     expect(screen.getByText("Watermark included")).toBeInTheDocument();

@@ -1,14 +1,12 @@
 "use client";
 
-import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
-import {
-  createTryOnPayload,
-  getTryOnLimits,
-  type TryOnTier,
-} from "@/lib/try-on";
+import { createTryOnPayload, getTryOnLimits, type TryOnTier } from "@/lib/try-on";
+import { useSession } from "@/lib/auth-client";
 import { getErrorMessage } from "@/lib/error-utils";
 import { Loader2, Sparkles, Upload, X } from "lucide-react";
 
@@ -16,6 +14,23 @@ type UploadSlot = "model" | 0 | 1 | 2;
 
 type TryOnResponse = {
   url?: string;
+  error?: string;
+  entitlement?: TryOnEntitlement;
+  usedToday?: number;
+  remainingToday?: number;
+};
+
+type TryOnEntitlement = {
+  tier: TryOnTier;
+  dailyLimit: number;
+  garmentLimit: number;
+  watermark: boolean;
+};
+
+type TryOnEntitlementResponse = {
+  entitlement: TryOnEntitlement;
+  usedToday: number;
+  remainingToday: number;
   error?: string;
 };
 
@@ -30,7 +45,15 @@ function readImageAsDataUrl(file: File) {
 
 export function HeroTryOn() {
   const t = useTranslations("hero.tryOn");
-  const [tier, setTier] = useState<TryOnTier>("paid");
+  const locale = useLocale();
+  const router = useRouter();
+  const session = useSession();
+  const userId = session.data?.user?.id;
+  const defaultEntitlement = useMemo(() => getEntitlementFromTier("free"), []);
+  const entitlementErrorRef = useRef(t("errors.entitlement"));
+  const [entitlement, setEntitlement] = useState<TryOnEntitlement>(defaultEntitlement);
+  const [usedToday, setUsedToday] = useState(0);
+  const [remainingToday, setRemainingToday] = useState(defaultEntitlement.dailyLimit);
   const [modelImage, setModelImage] = useState<string | null>(null);
   const [garmentImages, setGarmentImages] = useState<Array<string | null>>([
     null,
@@ -43,20 +66,62 @@ export function HeroTryOn() {
   const modelInputRef = useRef<HTMLInputElement | null>(null);
   const garmentInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  const limits = getTryOnLimits(tier);
+  useEffect(() => {
+    entitlementErrorRef.current = t("errors.entitlement");
+  }, [t]);
+
   const activeGarments = useMemo(
     () => garmentImages.filter((image): image is string => Boolean(image)),
     [garmentImages]
   );
-  const canGenerate = Boolean(modelImage) && activeGarments.length > 0 && !isGenerating;
+  const isAnonymous = !userId;
+  const canGenerate =
+    !isGenerating &&
+    (isAnonymous || (Boolean(modelImage) && activeGarments.length > 0 && remainingToday > 0));
 
-  const handleTierChange = (nextTier: TryOnTier) => {
-    setTier(nextTier);
-    setError(null);
-    if (nextTier === "free") {
+  useEffect(() => {
+    if (!userId) {
+      setEntitlement(defaultEntitlement);
+      setUsedToday(0);
+      setRemainingToday(defaultEntitlement.dailyLimit);
       setGarmentImages((images) => [images[0], null, null]);
+      return;
     }
-  };
+
+    let cancelled = false;
+
+    async function loadEntitlement() {
+      try {
+        const response = await fetch("/api/try-on/entitlement", {
+          cache: "no-store",
+        });
+        const data = (await response.json()) as TryOnEntitlementResponse;
+
+        if (!response.ok) {
+          throw new Error(data.error || entitlementErrorRef.current);
+        }
+
+        if (!cancelled) {
+          setEntitlement(data.entitlement);
+          setUsedToday(data.usedToday);
+          setRemainingToday(data.remainingToday);
+          setGarmentImages((images) => images.map((image, index) =>
+            index < data.entitlement.garmentLimit ? image : null
+          ));
+        }
+      } catch (entitlementError: unknown) {
+        if (!cancelled) {
+          setError(getErrorMessage(entitlementError, entitlementErrorRef.current));
+        }
+      }
+    }
+
+    void loadEntitlement();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [defaultEntitlement, userId]);
 
   const handleUpload = async (
     event: ChangeEvent<HTMLInputElement>,
@@ -100,8 +165,18 @@ export function HeroTryOn() {
   };
 
   const handleGenerate = async () => {
+    if (isAnonymous) {
+      setError(t("errors.loginRequired"));
+      return;
+    }
+
     if (!modelImage || activeGarments.length === 0) {
       setError(t("errors.missingImages"));
+      return;
+    }
+
+    if (remainingToday <= 0) {
+      setError(t("errors.limitReached"));
       return;
     }
 
@@ -110,7 +185,7 @@ export function HeroTryOn() {
 
     try {
       const payload = createTryOnPayload({
-        tier,
+        tier: entitlement.tier,
         modelImage,
         garmentImages: activeGarments,
       });
@@ -121,7 +196,6 @@ export function HeroTryOn() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          tier,
           modelImage,
           garmentImages: payload.images.slice(1),
         }),
@@ -133,6 +207,15 @@ export function HeroTryOn() {
       }
 
       setResultUrl(data.url);
+      if (data.entitlement) {
+        setEntitlement(data.entitlement);
+      }
+      if (typeof data.usedToday === "number") {
+        setUsedToday(data.usedToday);
+      }
+      if (typeof data.remainingToday === "number") {
+        setRemainingToday(data.remainingToday);
+      }
     } catch (generateError: unknown) {
       setError(getErrorMessage(generateError, t("errors.generate")));
     } finally {
@@ -143,25 +226,15 @@ export function HeroTryOn() {
   return (
     <div className="mt-8 w-full max-w-5xl rounded-2xl border border-border bg-background/90 p-4 shadow-2xl backdrop-blur sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex rounded-lg border border-border bg-secondary p-1">
-          {(["free", "paid"] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => handleTierChange(option)}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition ${
-                tier === option
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t(`tiers.${option}`)}
-            </button>
-          ))}
+        <div className="inline-flex rounded-lg border border-border bg-secondary px-3 py-2 text-sm font-medium text-foreground">
+          {isAnonymous ? t("status.anonymous") : t(`tiers.${entitlement.tier}`)}
         </div>
         <div className="text-xs leading-5 text-muted-foreground sm:text-right">
           <p>{t("rules.free")}</p>
           <p>{t("rules.paid")}</p>
+          {!isAnonymous && (
+            <p>{t("rules.remaining", { remaining: remainingToday, used: usedToday })}</p>
+          )}
         </div>
       </div>
 
@@ -185,7 +258,7 @@ export function HeroTryOn() {
 
         <div className="grid gap-3">
           {garmentImages.map((image, index) => {
-            const disabled = index >= limits.garmentLimit;
+            const disabled = index >= entitlement.garmentLimit;
             return (
               <div key={index} className="min-h-[92px]">
                 <input
@@ -238,8 +311,17 @@ export function HeroTryOn() {
           <div>
             <p className="text-sm font-medium text-foreground">{t("settings.title")}</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              {limits.watermark ? t("settings.watermarkOn") : t("settings.watermarkOff")}
+              {entitlement.watermark ? t("settings.watermarkOn") : t("settings.watermarkOff")}
             </p>
+            {isAnonymous && (
+              <button
+                type="button"
+                onClick={() => router.push(`/${locale}/login`)}
+                className="mt-3 text-sm font-medium text-primary underline-offset-4 hover:underline"
+              >
+                {t("generate.login")}
+              </button>
+            )}
           </div>
           {error && (
             <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -266,6 +348,17 @@ export function HeroTryOn() {
       </div>
     </div>
   );
+}
+
+function getEntitlementFromTier(tier: TryOnTier): TryOnEntitlement {
+  const limits = getTryOnLimits(tier);
+
+  return {
+    tier,
+    dailyLimit: limits.dailyGenerations,
+    garmentLimit: limits.garmentLimit,
+    watermark: limits.watermark,
+  };
 }
 
 type UploadPanelProps = {
