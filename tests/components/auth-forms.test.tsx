@@ -116,4 +116,28 @@ describe("auth forms", () => {
 
     fetchSpy.mockRestore();
   });
+
+  it("shows the login Google error returned by Better Auth", async () => {
+    authClientMocks.signInSocialMock.mockResolvedValue({
+      error: { message: "Google provider is not configured" },
+    });
+
+    render(<LoginForm showGoogleAuth />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
+
+    expect(screen.getByText("Google provider is not configured")).toBeInTheDocument();
+  });
+
+  it("shows the signup Google error returned by Better Auth", async () => {
+    authClientMocks.signInSocialMock.mockResolvedValue({
+      error: { message: "Origin is not trusted" },
+    });
+
+    render(<SignupForm showGoogleAuth />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
+
+    expect(screen.getByText("Origin is not trusted")).toBeInTheDocument();
+  });
 });

@@ -5,14 +5,7 @@ import { db } from "./db";
 import { getGoogleAuthProvider } from "./auth/google-auth";
 import { sendVerificationEmail as sendVerificationEmailMessage } from "./email";
 import { grantRegistrationBonusIfEligible } from "./auth-registration";
-
-const defaultTrustedOrigins = ["http://localhost:3000"];
-
-const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
-  ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(",")
-      .map((origin) => origin.trim())
-      .filter(Boolean)
-  : defaultTrustedOrigins;
+import { getAuthBaseURLConfig, getAuthTrustedOrigins } from "./auth/config";
 
 const googleAuthProvider = getGoogleAuthProvider();
 
@@ -21,7 +14,7 @@ export const auth = betterAuth({
     provider: "pg",
   }),
 
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: getAuthBaseURLConfig(),
   secret: process.env.BETTER_AUTH_SECRET,
 
   emailAndPassword: {
@@ -46,7 +39,7 @@ export const auth = betterAuth({
       }
     : {}),
 
-  trustedOrigins,
+  trustedOrigins: getAuthTrustedOrigins(),
 
   hooks: {
     after: createAuthMiddleware(async (ctx) => {

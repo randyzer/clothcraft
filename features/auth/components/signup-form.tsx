@@ -62,10 +62,16 @@ export function SignupForm({ showGoogleAuth = true }: SignupFormProps) {
   async function handleGoogleSignIn() {
     try {
       setIsLoading(true);
-      await signIn.social({
+      setError(null);
+
+      const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: `/${locale}`,
       });
+
+      if (error) {
+        setError(error.message || t('errors.googleSignupFailed'));
+      }
     } catch {
       setError(t('errors.googleSignupFailed'));
     } finally {
