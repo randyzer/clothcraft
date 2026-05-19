@@ -99,29 +99,41 @@ describe("Hero", () => {
     vi.clearAllMocks();
   });
 
-  it("opens the course-community modal and keeps the link as a new-tab external url", () => {
+  it("renders the AI outfit try-on workspace in the homepage hero", () => {
     render(<Hero />);
 
     expect(
-      screen.queryByRole("dialog", {
-        name: "Get the source code from our course community",
-      })
-    ).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Get Code" }));
-
-    expect(
-      screen.getByRole("dialog", {
-        name: "Get the source code from our course community",
+      screen.getByRole("heading", {
+        name: "AI Outfit Try-On",
       })
     ).toBeInTheDocument();
+    expect(screen.getByText("Upload model")).toBeInTheDocument();
+    expect(screen.getByText("Garment 1")).toBeInTheDocument();
+    expect(screen.getByText("Garment 2")).toBeInTheDocument();
+    expect(screen.getByText("Garment 3")).toBeInTheDocument();
+    expect(screen.getByText("Free: 3 generations/day, 1 garment, watermark")).toBeInTheDocument();
+    expect(screen.getByText("Paid: 200 generations/month, 3 garments, no watermark")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Generate try-on" })).toBeDisabled();
+  });
 
-    const courseLink = screen.getByRole("link", { name: "Open the course community" });
-    expect(courseLink).toHaveAttribute(
-      "href",
-      "https://scys.com/deepsea/2001/course"
-    );
-    expect(courseLink).toHaveAttribute("target", "_blank");
-    expect(courseLink).toHaveAttribute("rel", "noopener noreferrer");
+  it("starts in paid mode so all three garment slots are available for core try-on testing", () => {
+    render(<Hero />);
+
+    expect(screen.getByRole("button", { name: "Paid" })).toHaveClass("text-foreground");
+    expect(screen.getByRole("button", { name: /Garment 2/ })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /Garment 3/ })).not.toBeDisabled();
+  });
+
+  it("keeps both generate icons mounted while switching loading state", () => {
+    render(<Hero />);
+
+    const generateButton = screen.getByRole("button", { name: "Generate try-on" });
+    expect(generateButton.querySelector('[data-icon-state="idle"]')).toBeInTheDocument();
+    expect(generateButton.querySelector('[data-icon-state="loading"]')).toBeInTheDocument();
+
+    fireEvent.click(generateButton);
+
+    expect(generateButton.querySelector('[data-icon-state="idle"]')).toBeInTheDocument();
+    expect(generateButton.querySelector('[data-icon-state="loading"]')).toBeInTheDocument();
   });
 });

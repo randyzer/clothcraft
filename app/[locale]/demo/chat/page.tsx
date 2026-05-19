@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/button";
 import { Background } from "@/components/background";
 import { MarkdownMessage } from "@/components/markdown-message";
+import { parseEventStreamChunk } from "@/lib/chat-stream";
 import type {
   ApiErrorResponse,
   ChatStreamEvent,
@@ -131,41 +132,35 @@ export default function ChatPage() {
       }
 
       let streamedContent = "";
+      let streamBuffer = "";
       
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        const chunk = decoder.decode(value, { stream: true });
+        const parsed = parseEventStreamChunk<ChatStreamEvent>(chunk, streamBuffer);
+        streamBuffer = parsed.remaining;
 
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6)) as ChatStreamEvent;
-              
-              if (data.type === "metadata") {
-                setChatSessionId(data.sessionId);
-                setRemainingCredits(data.remainingCredits);
-              } else if (data.type === "content") {
-                streamedContent += data.content;
-                setMessages(prev => prev.map(msg => 
-                  msg.id === assistantMessageId 
-                    ? { ...msg, content: streamedContent }
-                    : msg
-                ));
-              } else if (data.type === "done") {
-                setMessages(prev => prev.map(msg => 
-                  msg.id === assistantMessageId 
-                    ? { ...msg, isStreaming: false }
-                    : msg
-                ));
-              } else if (data.type === "error") {
-                throw new Error(data.error);
-              }
-            } catch {
-              // Ignore parsing errors for incomplete chunks
-            }
+        for (const data of parsed.events) {
+          if (data.type === "metadata") {
+            setChatSessionId(data.sessionId);
+            setRemainingCredits(data.remainingCredits);
+          } else if (data.type === "content") {
+            streamedContent += data.content;
+            setMessages(prev => prev.map(msg => 
+              msg.id === assistantMessageId 
+                ? { ...msg, content: streamedContent }
+                : msg
+            ));
+          } else if (data.type === "done") {
+            setMessages(prev => prev.map(msg => 
+              msg.id === assistantMessageId 
+                ? { ...msg, isStreaming: false }
+                : msg
+            ));
+          } else if (data.type === "error") {
+            throw new Error(data.error);
           }
         }
       }

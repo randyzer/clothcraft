@@ -1,12 +1,36 @@
 import { VolcanoEngineConfig } from './types';
 
-export const volcanoEngineConfig: VolcanoEngineConfig = {
-  apiKey: process.env.VOLCANO_ENGINE_API_KEY || '',
-  apiUrl: process.env.VOLCANO_ENGINE_API_URL || 'https://ark.cn-beijing.volces.com/api/v3',
-  // 使用豆包模型名称，无需创建端点
-  textModel: 'doubao-1-5-thinking-pro-250415',  // 豆包 1.5 Thinking Pro 版本（正确的模型名）
-  imageModel: 'doubao-seededit-3-0-i2i-250628',  // 豆包 SeedEdit 3.0 图生图模型
-  videoModel: 'doubao-seedance-1-0-pro-250528',  // Seedance Pro 视频生成模型
+type VolcanoEngineEnv = {
+  VOLCANO_ENGINE_API_KEY?: string;
+  VOLCANO_ENGINE_API_URL?: string;
+  VOLCANO_ENGINE_TEXT_MODEL?: string;
+  VOLCANO_ENGINE_IMAGE_MODEL?: string;
+  VOLCANO_ENGINE_VIDEO_MODEL?: string;
+};
+
+const DEFAULT_TEXT_MODEL = 'doubao-seed-2-0-lite-260428';
+const DEFAULT_IMAGE_MODEL = 'doubao-seedream-5-0-260128';
+const DEFAULT_VIDEO_MODEL = 'doubao-seedance-1-0-pro-250528';
+
+export function resolveVolcanoEngineConfig(
+  env: VolcanoEngineEnv = process.env as VolcanoEngineEnv
+): VolcanoEngineConfig {
+  return {
+    apiKey: env.VOLCANO_ENGINE_API_KEY || '',
+    apiUrl:
+      env.VOLCANO_ENGINE_API_URL || 'https://ark.cn-beijing.volces.com/api/v3',
+    textModel: env.VOLCANO_ENGINE_TEXT_MODEL || DEFAULT_TEXT_MODEL,
+    imageModel: env.VOLCANO_ENGINE_IMAGE_MODEL || DEFAULT_IMAGE_MODEL,
+    videoModel: env.VOLCANO_ENGINE_VIDEO_MODEL || DEFAULT_VIDEO_MODEL,
+  };
+}
+
+export const volcanoEngineConfig: VolcanoEngineConfig = resolveVolcanoEngineConfig();
+
+export const defaultVolcanoModels = {
+  text: DEFAULT_TEXT_MODEL,
+  image: DEFAULT_IMAGE_MODEL,
+  video: DEFAULT_VIDEO_MODEL,
 };
 
 export function validateConfig(): void {

@@ -2,31 +2,20 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import {
-  getDefaultOneTimePack,
-  getSubscriptionPlanDisplays,
-} from "@/lib/billing-display";
 
 type ComparisonCell = string;
 
 export function PricingTable() {
   const t = useTranslations("pricing");
-  const subscriptionPlans = getSubscriptionPlanDisplays();
-  const defaultPack = getDefaultOneTimePack();
-  const [starterPlan, proPlan] = subscriptionPlans;
-
-  if (!starterPlan || !proPlan) {
-    return null;
-  }
 
   const tiers = [
-    ...[starterPlan, proPlan].map((plan) => ({
-      id: plan.id,
-      name: t(`tiers.${plan.id}.name`),
-    })),
     {
-      id: defaultPack.key,
-      name: t("tiers.credits.name"),
+      id: "free",
+      name: t("tiers.free.name"),
+    },
+    {
+      id: "paid",
+      name: t("tiers.paid.name"),
     },
   ];
 
@@ -35,79 +24,44 @@ export function PricingTable() {
     values: Record<string, ComparisonCell>;
   }> = [
     {
-      title: t("comparison.rows.purchaseType"),
+      title: t("comparison.rows.price"),
       values: {
-        starter: t("comparison.values.subscription"),
-        pro: t("comparison.values.subscription"),
-        [defaultPack.key]: t("comparison.values.oneTime"),
+        free: "$0",
+        paid: "$29 / month",
       },
     },
     {
-      title: t("comparison.rows.monthlyPrice"),
+      title: t("comparison.rows.generations"),
       values: {
-        starter: starterPlan.displayMonthlyPrice,
-        pro: proPlan.displayMonthlyPrice,
-        [defaultPack.key]: defaultPack.displayPrice,
+        free: t("comparison.values.freeGenerations"),
+        paid: t("comparison.values.paidGenerations"),
       },
     },
     {
-      title: t("comparison.rows.yearlyPrice"),
+      title: t("comparison.rows.garments"),
       values: {
-        starter: starterPlan.displayYearlyPrice,
-        pro: proPlan.displayYearlyPrice,
-        [defaultPack.key]: t("comparison.values.notApplicable"),
+        free: t("comparison.values.freeGarments"),
+        paid: t("comparison.values.paidGarments"),
       },
     },
     {
-      title: t("comparison.rows.monthlyCredits"),
+      title: t("comparison.rows.watermark"),
       values: {
-        starter: t("comparison.values.creditsPerMonth", {
-          credits: starterPlan.displayMonthlyCredits,
-        }),
-        pro: t("comparison.values.creditsPerMonth", {
-          credits: proPlan.displayMonthlyCredits,
-        }),
-        [defaultPack.key]: t("comparison.values.oneTimeCredits", {
-          credits: defaultPack.displayCredits,
-        }),
-      },
-    },
-    {
-      title: t("comparison.rows.yearlyCredits"),
-      values: {
-        starter: t("comparison.values.creditsPerYear", {
-          credits: starterPlan.displayYearlyCredits,
-        }),
-        pro: t("comparison.values.creditsPerYear", {
-          credits: proPlan.displayYearlyCredits,
-        }),
-        [defaultPack.key]: t("comparison.values.notApplicable"),
-      },
-    },
-    {
-      title: t("comparison.rows.delivery"),
-      values: {
-        starter: t("comparison.values.yearlyInstallments", {
-          credits: starterPlan.displayYearlyCreditsPerGrant,
-        }),
-        pro: t("comparison.values.yearlyInstallments", {
-          credits: proPlan.displayYearlyCreditsPerGrant,
-        }),
-        [defaultPack.key]: t("comparison.values.instantAfterPayment"),
+        free: t("comparison.values.watermarkIncluded"),
+        paid: t("comparison.values.noWatermark"),
       },
     },
     {
       title: t("comparison.rows.bestFor"),
       values: {
-        starter: t("comparison.values.bestForStarter"),
-        pro: t("comparison.values.bestForPro"),
-        [defaultPack.key]: t("comparison.values.bestForCredits"),
+        free: t("comparison.values.bestForFree"),
+        paid: t("comparison.values.bestForPaid"),
       },
     },
   ];
 
   return (
-    <div className="relative z-20 mx-auto w-full px-4 py-40">
+    <div className="relative z-20 mx-auto w-full px-4 py-32">
       <div className="mt-8 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">

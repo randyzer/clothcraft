@@ -53,10 +53,12 @@ export interface ImageGenerationRequest {
   model: string;
   prompt: string;
   image?: string[];  // Optional input images for image-to-image generation
+  sequential_image_generation?: 'disabled';
   response_format?: 'url' | 'b64_json';
   size?: 'adaptive' | '1K' | '2K' | '4K';
   seed?: number;
   guidance_scale?: number;
+  stream?: boolean;
   watermark?: boolean;
 }
 

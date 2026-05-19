@@ -1,10 +1,16 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import messages from "@/messages/en.json";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { SignupForm } from "@/features/auth/components/signup-form";
 
 const routerPushMock = vi.fn();
+const authClientMocks = vi.hoisted(() => ({
+  signInEmailMock: vi.fn(),
+  signInSocialMock: vi.fn(),
+  signUpEmailMock: vi.fn(),
+}));
 
 function getNestedValue(source: Record<string, unknown>, path: string) {
   return path.split(".").reduce<unknown>((value, key) => {
@@ -55,15 +61,22 @@ vi.mock("next/link", () => ({
 
 vi.mock("@/lib/auth-client", () => ({
   signIn: {
-    email: vi.fn(),
-    social: vi.fn(),
+    email: authClientMocks.signInEmailMock,
+    social: authClientMocks.signInSocialMock,
   },
   signUp: {
-    email: vi.fn(),
+    email: authClientMocks.signUpEmailMock,
   },
 }));
 
 describe("auth forms", () => {
+  beforeEach(() => {
+    routerPushMock.mockReset();
+    authClientMocks.signInEmailMock.mockReset();
+    authClientMocks.signInSocialMock.mockReset();
+    authClientMocks.signUpEmailMock.mockReset();
+  });
+
   it("hides the Google button on login when Google auth is disabled", () => {
     render(<LoginForm showGoogleAuth={false} />);
 
@@ -80,5 +93,27 @@ describe("auth forms", () => {
     render(<LoginForm showGoogleAuth />);
 
     expect(screen.getByRole("button", { name: "Continue with Google" })).toBeInTheDocument();
+  });
+
+  it("redirects to check-email after a successful signup without calling a custom resend endpoint", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch");
+    authClientMocks.signUpEmailMock.mockResolvedValue({ error: null });
+
+    render(<SignupForm showGoogleAuth={false} />);
+
+    await userEvent.type(screen.getByLabelText("Full name"), "Randy");
+    await userEvent.type(screen.getByLabelText("Email address"), "randy@example.com");
+    await userEvent.type(screen.getByLabelText("Password"), "password123");
+    await userEvent.click(screen.getByRole("button", { name: "Sign Up" }));
+
+    expect(authClientMocks.signUpEmailMock).toHaveBeenCalledWith({
+      email: "randy@example.com",
+      password: "password123",
+      name: "Randy",
+    });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(routerPushMock).toHaveBeenCalledWith("/en/check-email");
+
+    fetchSpy.mockRestore();
   });
 });

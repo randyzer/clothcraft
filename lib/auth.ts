@@ -2,8 +2,9 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
 import { db } from "./db";
-import { refundCredits } from "./credits";
 import { getGoogleAuthProvider } from "./auth/google-auth";
+import { sendVerificationEmail as sendVerificationEmailMessage } from "./email";
+import { grantRegistrationBonusIfEligible } from "./auth-registration";
 
 const defaultTrustedOrigins = ["http://localhost:3000"];
 
@@ -26,6 +27,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  emailVerification: {
+    sendOnSignUp: true,
+    async sendVerificationEmail({ token, user }) {
+      const result = await sendVerificationEmailMessage(user.email, token);
+      if (!result.success) {
+        throw result.error instanceof Error
+          ? result.error
+          : new Error("Failed to send verification email");
+      }
+    },
+  },
   ...(googleAuthProvider
     ? {
         socialProviders: {
@@ -38,21 +50,20 @@ export const auth = betterAuth({
 
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
-      // Listen for user registration events (email and OAuth)
-      if (ctx.path.startsWith("/sign-up")) {
-        const newSession = ctx.context.newSession;
-        if (newSession) {
-          try {
-            // Grant 300 credits as registration bonus
-            await refundCredits(
-              newSession.user.id,
-              300,
-              "registration_bonus"
-            );
-            console.log(`[Auth] New user registered, granted 300 credits: ${newSession.user.email}`);
-          } catch (error) {
-            console.error("[Auth] Failed to grant registration bonus:", error);
-          }
+      try {
+        const granted = await grantRegistrationBonusIfEligible({
+          path: ctx.path,
+          newSession: ctx.context.newSession,
+        });
+
+        if (granted && ctx.context.newSession) {
+          console.log(
+            `[Auth] New user registered, granted 300 credits: ${ctx.context.newSession.user.email}`
+          );
+        }
+      } catch (error) {
+        if (ctx.context.newSession) {
+          console.error("[Auth] Failed to grant registration bonus:", error);
         }
       }
     }),

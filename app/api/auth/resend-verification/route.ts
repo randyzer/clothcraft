@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { user, verification } from "@/lib/db/schema";
+import { user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { sendVerificationEmail } from "@/lib/email";
-import crypto from "crypto";
 import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
@@ -15,7 +13,7 @@ export async function POST(request: NextRequest) {
     
     if (!session || !session.user) {
       return NextResponse.json(
-        { message: "Unauthorized" },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -31,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     if (!existingUser || existingUser.length === 0) {
       return NextResponse.json(
-        { message: "User not found" },
+        { error: "User not found" },
         { status: 404 }
       );
     }
@@ -40,34 +38,21 @@ export async function POST(request: NextRequest) {
 
     if (currentUser.emailVerified) {
       return NextResponse.json(
-        { message: "Email is already verified" },
+        { error: "Email is already verified" },
         { status: 400 }
       );
     }
 
-    // Generate new verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    // Remove existing verification token before inserting a new one
-    await db
-      .delete(verification)
-      .where(eq(verification.id, `email-verification:${userId}`));
-
-    // Store verification token
-    await db.insert(verification).values({
-      id: `email-verification:${userId}`,
-      identifier: "email-verification",
-      value: verificationToken,
-      expiresAt,
+    const result = await auth.api.sendVerificationEmail({
+      headers: request.headers,
+      body: {
+        email: currentUser.email,
+      },
     });
 
-    // Send verification email
-    const result = await sendVerificationEmail(currentUser.email, verificationToken);
-
-    if (!result.success) {
+    if (!result?.status) {
       return NextResponse.json(
-        { message: "Failed to send verification email" },
+        { error: "Failed to send verification email" },
         { status: 500 }
       );
     }
@@ -79,7 +64,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Resend verification error:", error);
     return NextResponse.json(
-      { message: "An error occurred. Please try again." },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "An error occurred. Please try again.",
+      },
       { status: 500 }
     );
   }

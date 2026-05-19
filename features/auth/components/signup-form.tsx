@@ -50,18 +50,6 @@ export function SignupForm({ showGoogleAuth = true }: SignupFormProps) {
         return;
       }
 
-      try {
-        const verificationResponse = await fetch('/api/auth/resend-verification', {
-          method: 'POST',
-          credentials: 'include',
-        });
-        if (!verificationResponse.ok) {
-          console.error('发送验证邮件失败: 接口返回非 200 状态');
-        }
-      } catch (verificationError) {
-        console.error('发送验证邮件失败:', verificationError);
-      }
-
       // 跳转到邮箱验证提示页面，而不是直接登录
       router.push(`/${locale}/check-email`);
     } catch {

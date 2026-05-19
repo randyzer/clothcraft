@@ -11,6 +11,11 @@ export const Globe = ({ className }: { className?: string }) => {
 
     if (!canvasRef.current) return;
 
+    const hasWebGl =
+      canvasRef.current.getContext("webgl") ||
+      canvasRef.current.getContext("webgl2");
+    if (!hasWebGl) return;
+
     const globe = createGlobe(canvasRef.current, {
       devicePixelRatio: 2,
       width: 600 * 2,

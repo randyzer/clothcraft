@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/context/theme-provider";
 import { MoonIcon } from "lucide-react";
 import { IconSunLow } from "@tabler/icons-react";
 import { motion } from "framer-motion";

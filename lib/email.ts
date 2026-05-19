@@ -35,6 +35,15 @@ export function getResendClient(apiKey = process.env.RESEND_API_KEY) {
   return new Resend(apiKey);
 }
 
+type ResendSendResult = {
+  error?: {
+    message?: string;
+    name?: string;
+    statusCode?: number;
+  };
+  id?: string;
+};
+
 export interface SendEmailOptions {
   to: string | string[];
   subject: string;
@@ -79,6 +88,16 @@ export async function sendEmail({
       from: from ?? getDefaultFromEmail(),
       ...(replyTo ? { replyTo } : {}),
     });
+
+    const resendData = data as ResendSendResult;
+    if (resendData?.error) {
+      const message = resendData.error.message || "Resend rejected the email request";
+      return {
+        success: false,
+        error: new Error(message),
+        data,
+      };
+    }
 
     return { success: true, data };
   } catch (error) {

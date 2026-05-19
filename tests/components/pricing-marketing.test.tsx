@@ -78,27 +78,29 @@ describe("marketing pricing", () => {
   it("renders only the configured plans on the pricing cards", () => {
     render(<Pricing />);
 
-    expect(screen.getByRole("heading", { name: "Starter" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Pro" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Credits Pack" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Free" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Paid" })).toBeInTheDocument();
+    expect(screen.getByText("$0")).toBeInTheDocument();
     expect(screen.getByText("$29")).toBeInTheDocument();
-    expect(screen.getByText("$99")).toBeInTheDocument();
-    expect(screen.getByText("$5")).toBeInTheDocument();
-    expect(screen.queryByText("Free")).not.toBeInTheDocument();
-    expect(screen.queryByText("Enterprise")).not.toBeInTheDocument();
-    expect(screen.queryByText("Professional")).not.toBeInTheDocument();
+    expect(screen.getAllByText("3 generations per day").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("200 generations per month").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("heading", { name: "Starter" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Pro" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Credits Pack" })).not.toBeInTheDocument();
   });
 
-  it("keeps the comparison table aligned with the real billing catalog", () => {
+  it("keeps the comparison table aligned with the try-on product limits", () => {
     render(<PricingTable />);
 
-    expect(screen.getByRole("columnheader", { name: "Starter" })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Pro" })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Credits Pack" })).toBeInTheDocument();
-    expect(screen.getByText("1,000 / month")).toBeInTheDocument();
-    expect(screen.getByText("10,000 / month")).toBeInTheDocument();
-    expect(screen.getByText("200 once")).toBeInTheDocument();
-    expect(screen.queryByRole("columnheader", { name: "Free" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("columnheader", { name: "Enterprise" })).not.toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Free" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Paid" })).toBeInTheDocument();
+    expect(screen.getByText("3 / day")).toBeInTheDocument();
+    expect(screen.getByText("200 / month")).toBeInTheDocument();
+    expect(screen.getByText("1 garment")).toBeInTheDocument();
+    expect(screen.getByText("Up to 3 garments")).toBeInTheDocument();
+    expect(screen.getByText("Watermark included")).toBeInTheDocument();
+    expect(screen.getByText("No watermark")).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Starter" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Credits Pack" })).not.toBeInTheDocument();
   });
 });

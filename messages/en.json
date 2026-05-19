@@ -64,21 +64,57 @@
     }
   },
   "hero": {
-    "badge": "⚡ The First Starter Built for Vibe Coding",
-    "title": "Vibe Code Your AI SaaS to Production",
-    "description": "No coding skills? Perfect. Sistine + AI coding assistants = Your SaaS idea live in hours. Just describe what you want. Ship what users love.",
-    "cta": {
-      "primary": "View Docs",
-      "secondary": "Get Code"
-    },
-    "modal": {
-      "eyebrow": "Code Access",
-      "title": "Get the source code from our course community",
-      "description": "The full Sistine Starter codebase, update notes, and companion materials are distributed inside our course community.",
-      "instruction": "If you're enrolled, open the course page below in a new tab to access the code, updates, and course resources.",
-      "linkLabel": "Open the course community",
-      "linkHint": "Course community: https://scys.com/deepsea/2001/course",
-      "close": "Close"
+    "badge": "AI outfit try-on powered by Seedream",
+    "title": "AI Outfit Try-On",
+    "description": "Upload a model and one garment to generate a watermarked free try-on, or switch to paid mode to combine up to three garments without watermark.",
+    "tryOn": {
+      "tiers": {
+        "free": "Free",
+        "paid": "Paid"
+      },
+      "rules": {
+        "free": "Free: 3 generations/day, 1 garment, watermark",
+        "paid": "Paid: 200 generations/month, 3 garments, no watermark"
+      },
+      "model": {
+        "title": "Upload model",
+        "helper": "Full-body or half-body photo works best"
+      },
+      "garments": {
+        "0": {
+          "title": "Garment 1",
+          "helper": "Required"
+        },
+        "1": {
+          "title": "Garment 2",
+          "helper": "Optional for paid mode"
+        },
+        "2": {
+          "title": "Garment 3",
+          "helper": "Optional for paid mode"
+        },
+        "locked": "Switch to paid mode to unlock"
+      },
+      "settings": {
+        "title": "Generation settings",
+        "watermarkOn": "Watermark enabled for free output.",
+        "watermarkOff": "Watermark disabled for paid output."
+      },
+      "result": {
+        "title": "Generated result",
+        "empty": "Your AI try-on result will appear here after generation.",
+        "alt": "Generated outfit try-on result"
+      },
+      "generate": {
+        "button": "Generate try-on",
+        "loading": "Generating..."
+      },
+      "errors": {
+        "invalidFile": "Please upload an image file.",
+        "upload": "Failed to load image.",
+        "missingImages": "Upload a model and at least one garment first.",
+        "generate": "Failed to generate try-on image."
+      }
     }
   },
   "features": {
@@ -104,77 +140,55 @@
     }
   },
   "pricing": {
-    "title": "Pricing Plans",
-    "subtitle": "Simple, transparent pricing that scales with your business",
-    "description": "Choose between live recurring subscriptions and a one-time credit top-up. Every price on this page is driven directly from the billing config used at checkout.",
-    "billing": {
-      "monthly": "Monthly",
-      "yearly": "Yearly"
-    },
+    "title": "AI Outfit Try-On Pricing",
+    "subtitle": "Simple plans for trying outfits with Seedream",
+    "description": "Start with watermarked daily trials, then upgrade when you need more monthly generations, no watermark, and up to three garments in one try-on.",
     "comparison": {
       "title": "Plan Comparison",
       "rows": {
-        "purchaseType": "Purchase type",
-        "monthlyPrice": "Monthly price",
-        "yearlyPrice": "Yearly price",
-        "monthlyCredits": "Credits on monthly billing",
-        "yearlyCredits": "Credits on yearly billing",
-        "delivery": "Credit delivery",
+        "price": "Price",
+        "generations": "Generation limit",
+        "garments": "Garments per try-on",
+        "watermark": "Watermark",
         "bestFor": "Best for"
       },
       "values": {
-        "subscription": "Subscription",
-        "oneTime": "One-time pack",
-        "notApplicable": "N/A",
-        "creditsPerMonth": "{credits} / month",
-        "creditsPerYear": "{credits} / year",
-        "oneTimeCredits": "{credits} once",
-        "yearlyInstallments": "{credits} released each month on annual billing",
-        "instantAfterPayment": "Added instantly after payment",
-        "bestForStarter": "Shipping an MVP with recurring usage",
-        "bestForPro": "Heavier production workloads and frequent generation",
-        "bestForCredits": "Top-ups without changing your subscription"
+        "freeGenerations": "3 / day",
+        "paidGenerations": "200 / month",
+        "freeGarments": "1 garment",
+        "paidGarments": "Up to 3 garments",
+        "watermarkIncluded": "Watermark included",
+        "noWatermark": "No watermark",
+        "bestForFree": "Testing the product and sharing early drafts",
+        "bestForPaid": "Creating clean catalog, social, and ecommerce visuals"
       }
     },
     "details": {
-      "monthlyCredits": "{credits} credits each month",
-      "yearlyCredits": "{credits} credits per year",
-      "subscriptionDelivery": "Recurring subscription billed through Creem",
-      "yearlyInstallments": "Annual billing releases {credits} credits each month",
-      "oneTimeCredits": "{credits} credits in one payment",
-      "oneTimeDelivery": "One-time checkout, credits added instantly"
+      "freeGenerations": "3 generations per day",
+      "paidGenerations": "200 generations per month",
+      "perMonth": "/ month"
     },
     "tiers": {
-      "starter": {
-        "name": "Starter",
-        "description": "For validating an AI product before you need high volume.",
-        "cta": "Choose Starter",
+      "free": {
+        "name": "Free",
+        "description": "For validating whether AI outfit try-on fits your workflow before paying.",
+        "cta": "Start free",
         "features": [
-          "Access chat, image, and video generation",
-          "1,000 credits on monthly billing",
-          "Annual plan releases 1,000 credits each month",
-          "Buy extra credit packs whenever you need a top-up"
+          "3 generations per day",
+          "1 garment per try-on",
+          "Watermarked output",
+          "Login required before real usage limits are enforced"
         ]
       },
-      "pro": {
-        "name": "Pro",
-        "description": "For teams and products that need more generation capacity.",
-        "cta": "Choose Pro",
+      "paid": {
+        "name": "Paid",
+        "description": "For creators, shops, and teams that need cleaner results and higher monthly volume.",
+        "cta": "Upgrade to Paid",
         "features": [
-          "Access chat, image, and video generation",
-          "10,000 credits on monthly billing",
-          "Annual plan releases 10,000 credits each month",
-          "Better fit for heavier production usage"
-        ]
-      },
-      "credits": {
-        "name": "Credits Pack",
-        "description": "One-time credits you can stack on top of any plan.",
-        "cta": "Buy {credits} Credits",
-        "features": [
-          "Credits are added immediately after payment",
-          "Keeps your current subscription unchanged",
-          "Useful for launches, spikes, and one-off bursts"
+          "200 generations per month",
+          "Combine up to 3 garments in one try-on",
+          "No watermark",
+          "Best fit for catalog, ecommerce, and social content"
         ]
       }
     }

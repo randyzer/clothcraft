@@ -8,8 +8,29 @@ import {
 type ImageGenerationOptions = {
   size?: 'adaptive' | '1K' | '2K' | '4K';
   inputImages?: string[];
+  model?: string;
   watermark?: boolean;
 };
+
+export function buildImageGenerationRequest(
+  prompt: string,
+  options?: ImageGenerationOptions
+): ImageGenerationRequest {
+  const model = options?.model || volcanoEngineConfig.imageModel || 'doubao-seedream-5-0-260128';
+  const size = options?.size || 'adaptive';
+  const images = options?.inputImages?.filter(Boolean);
+
+  return {
+    model,
+    prompt,
+    image: images && images.length > 0 ? images : undefined,
+    sequential_image_generation: images && images.length > 1 ? 'disabled' : undefined,
+    response_format: 'url',
+    size,
+    stream: false,
+    watermark: options?.watermark !== undefined ? options.watermark : true,
+  };
+}
 
 export async function generateImage(
   prompt: string,
@@ -17,19 +38,7 @@ export async function generateImage(
 ): Promise<ImageGenerationResponse> {
   validateConfig();
 
-  const model = volcanoEngineConfig.imageModel || 'doubao-seededit-3-0-i2i-250628';
-
-  const size = options?.size || 'adaptive';
-  const images = options?.inputImages?.filter(Boolean);
-
-  const request: ImageGenerationRequest = {
-    model,
-    prompt,
-    image: images && images.length > 0 ? images : undefined,
-    response_format: 'url',
-    size,
-    watermark: options?.watermark !== undefined ? options.watermark : true,
-  };
+  const request = buildImageGenerationRequest(prompt, options);
 
   const response = await fetch(`${volcanoEngineConfig.apiUrl}/images/generations`, {
     method: 'POST',
