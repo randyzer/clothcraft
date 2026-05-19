@@ -124,6 +124,7 @@ describe("SettingsPage", () => {
           email: "builder@example.com",
           emailVerified: true,
           credits: 420,
+          planKey: "starter_monthly",
           createdAt: "2025-01-01T00:00:00.000Z",
           subscription: {
             planKey: "starter_monthly",
@@ -147,6 +148,7 @@ describe("SettingsPage", () => {
     expect(screen.getByDisplayValue("Sistine Builder")).toBeInTheDocument();
     expect(screen.getByText("420")).toBeInTheDocument();
     expect(screen.getByText("ClothCraft Monthly")).toBeInTheDocument();
+    expect(screen.getByText("Pro")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Manage credits" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "View pricing" })).toBeInTheDocument();
   });

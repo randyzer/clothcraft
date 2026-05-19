@@ -32,6 +32,12 @@
       "pending": "待处理",
       "active": "已激活",
       "inactive": "未激活"
+    },
+    "planBadges": {
+      "free": "免费版",
+      "pro": "Pro",
+      "freeTitle": "ClothCraft 免费账户",
+      "proTitle": "ClothCraft Pro 账户"
     }
   },
   "navigation": {
@@ -773,7 +779,7 @@
         "viewCredits": "查看积分"
       }
     },
-    "paymentSuccess": "✅ 支付成功！您的点数将很快更新。",
+    "paymentSuccess": "支付已完成，正在确认订单。会员状态和积分到账后会自动刷新显示。",
     "creditHistory": {
       "title": "积分记录",
       "noRecords": "暂无积分记录",

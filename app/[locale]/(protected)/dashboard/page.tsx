@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getDefaultOneTimePack } from "@/lib/billing-display";
 import { getSubscriptionPlanTranslationKey } from "@/lib/account-settings";
 import type { ClientUserProfile, UserProfileResponse } from "@/lib/client-api";
+import { AccountPlanBadge } from "@/components/account-plan-badge";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -55,16 +56,27 @@ export default function DashboardPage() {
     
     if (success === "1" || checkoutId || orderId || subscriptionId) {
       setPaymentSuccess(true);
-      
-      // Refresh user profile to get updated credits
-      setTimeout(() => {
-        fetchUserProfile();
-      }, 1000);
-      
+
+      let attempts = 0;
+      void fetchUserProfile();
+      const intervalId = window.setInterval(() => {
+        attempts += 1;
+        void fetchUserProfile();
+
+        if (attempts >= 20) {
+          window.clearInterval(intervalId);
+        }
+      }, 3000);
+
       // Clean up URL after showing success
-      setTimeout(() => {
+      const cleanupId = window.setTimeout(() => {
         router.replace(`/${locale}/dashboard`);
-      }, 5000);
+      }, 15000);
+
+      return () => {
+        window.clearInterval(intervalId);
+        window.clearTimeout(cleanupId);
+      };
     }
   }, [searchParams, router, fetchUserProfile, locale]);
   
@@ -88,8 +100,9 @@ export default function DashboardPage() {
   const user = session.data?.user;
   const displayUser = userProfile || user;
   const credits = userProfile?.credits ?? 0;
+  const rawPlanKey = userProfile?.subscription?.planKey ?? userProfile?.planKey;
   const subscriptionPlanKey = getSubscriptionPlanTranslationKey(
-    userProfile?.subscription?.planKey
+    rawPlanKey
   );
 
   if (loading && !user) {
@@ -117,9 +130,12 @@ export default function DashboardPage() {
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
             {t('title')}
           </h1>
-          <p className="text-xl text-muted-foreground mb-12">
-            {t('welcome')}, {displayUser?.name || displayUser?.email}
-          </p>
+          <div className="mb-12 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <p className="text-xl text-muted-foreground">
+              {t('welcome')}, {displayUser?.name || displayUser?.email}
+            </p>
+            <AccountPlanBadge planKey={rawPlanKey} />
+          </div>
 
           {paymentSuccess && (
             <div className="mb-8 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
@@ -209,9 +225,12 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-muted-foreground">{t('cards.statistics.labels.plan')}</span>
-                <span className="text-base font-medium text-card-foreground">
-                  {t(`cards.statistics.plans.${subscriptionPlanKey}`)}
-                </span>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <span className="text-base font-medium text-card-foreground">
+                    {t(`cards.statistics.plans.${subscriptionPlanKey}`)}
+                  </span>
+                  <AccountPlanBadge planKey={rawPlanKey} size="sm" />
+                </div>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-muted-foreground">{t('cards.statistics.labels.credits')}</span>

@@ -32,6 +32,12 @@
       "pending": "Pending",
       "active": "Active",
       "inactive": "Inactive"
+    },
+    "planBadges": {
+      "free": "Free",
+      "pro": "Pro",
+      "freeTitle": "Free ClothCraft account",
+      "proTitle": "ClothCraft Pro account"
     }
   },
   "navigation": {
@@ -774,7 +780,7 @@
         "viewCredits": "View Credits"
       }
     },
-    "paymentSuccess": "✅ Payment successful! Your credits will be updated shortly.",
+    "paymentSuccess": "Payment completed. We are confirming the order and will refresh your plan and credits here.",
     "creditHistory": {
       "title": "Credit History",
       "noRecords": "No credit history yet",

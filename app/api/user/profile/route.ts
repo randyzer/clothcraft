@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
         emailVerified: userTable.emailVerified,
         image: userTable.image,
         credits: userTable.credits,
+        planKey: userTable.planKey,
         createdAt: userTable.createdAt,
       })
       .from(userTable)
@@ -52,15 +53,26 @@ export async function GET(req: NextRequest) {
       .limit(1);
 
     const activeSubscription = subscriptions[0];
+    const subscription =
+      activeSubscription ??
+      (user.planKey && user.planKey !== "free"
+        ? {
+            planKey: user.planKey,
+            status: "active",
+            currentPeriodEnd: null,
+          }
+        : null);
 
     return NextResponse.json({
       user: {
         ...user,
-        subscription: activeSubscription ? {
-          planKey: activeSubscription.planKey,
-          status: activeSubscription.status,
-          currentPeriodEnd: activeSubscription.currentPeriodEnd,
-        } : null,
+        subscription: subscription
+          ? {
+              planKey: subscription.planKey,
+              status: subscription.status,
+              currentPeriodEnd: subscription.currentPeriodEnd,
+            }
+          : null,
       },
     });
   } catch (error) {
@@ -99,6 +111,7 @@ export async function PATCH(req: NextRequest) {
         emailVerified: userTable.emailVerified,
         image: userTable.image,
         credits: userTable.credits,
+        planKey: userTable.planKey,
         createdAt: userTable.createdAt,
       });
 

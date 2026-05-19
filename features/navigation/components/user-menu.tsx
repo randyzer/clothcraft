@@ -14,6 +14,8 @@ import {
   IconCoins,
   IconSettings,
 } from "@tabler/icons-react";
+import { AccountPlanBadge } from "@/components/account-plan-badge";
+import type { UserProfileResponse } from "@/lib/client-api";
 
 export function UserMenu() {
   const session = useSession();
@@ -22,6 +24,7 @@ export function UserMenu() {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [planKey, setPlanKey] = useState<string | null>(null);
 
   useEffect(() => {
     // 检查用户是否是管理员
@@ -40,6 +43,26 @@ export function UserMenu() {
     };
     
     checkAdminStatus();
+  }, [session.data?.user?.id]);
+
+  useEffect(() => {
+    const loadPlan = async () => {
+      if (!session.data?.user?.id) {
+        setPlanKey(null);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/user/profile");
+        if (!response.ok) return;
+        const data = (await response.json()) as UserProfileResponse;
+        setPlanKey(data.user.subscription?.planKey ?? data.user.planKey ?? null);
+      } catch (error) {
+        console.error("Failed to load user plan:", error);
+      }
+    };
+
+    void loadPlan();
   }, [session.data?.user?.id]);
 
   if (session.isPending) {
@@ -80,20 +103,23 @@ export function UserMenu() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs ring-1 ring-transparent hover:ring-blue-500/50 transition-all"
+        className="flex items-center gap-2 rounded-full bg-background/80 p-1 pr-2 ring-1 ring-border transition-all hover:ring-primary/40"
       >
-        {user.image ? (
-          <Image
-            src={user.image}
-            alt={user.name || "User"}
-            width={24}
-            height={24}
-            className="h-full w-full rounded-full object-cover"
-            unoptimized
-          />
-        ) : (
-          initial
-        )}
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-foreground text-xs text-primary-foreground">
+          {user.image ? (
+            <Image
+              src={user.image}
+              alt={user.name || "User"}
+              width={24}
+              height={24}
+              className="h-full w-full rounded-full object-cover"
+              unoptimized
+            />
+          ) : (
+            initial
+          )}
+        </span>
+        <AccountPlanBadge planKey={planKey} size="sm" showIcon={false} />
       </button>
 
       {isOpen && (
@@ -112,6 +138,7 @@ export function UserMenu() {
                   {user.email}
                 </p>
               )}
+              <AccountPlanBadge planKey={planKey} size="sm" className="mt-2" />
             </div>
 
             <Link

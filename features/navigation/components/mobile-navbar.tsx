@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMotionValueEvent, useScroll, motion, AnimatePresence } from "framer-motion";
 import { IoIosClose, IoIosMenu } from "react-icons/io";
@@ -16,6 +16,8 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from "@/lib/utils";
 import { marketingNavigationKeys } from "@/features/navigation/config";
+import { AccountPlanBadge } from "@/components/account-plan-badge";
+import type { UserProfileResponse } from "@/lib/client-api";
 
 const iconMap = {
   MessageSquare: MessageSquare,
@@ -35,6 +37,27 @@ export const MobileNavbar = () => {
   const { scrollY } = useScroll();
 
   const [showBackground, setShowBackground] = useState(false);
+  const [planKey, setPlanKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPlan = async () => {
+      if (!session.data?.user?.id) {
+        setPlanKey(null);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/user/profile");
+        if (!response.ok) return;
+        const data = (await response.json()) as UserProfileResponse;
+        setPlanKey(data.user.subscription?.planKey ?? data.user.planKey ?? null);
+      } catch (error) {
+        console.error("Failed to load user plan:", error);
+      }
+    };
+
+    void loadPlan();
+  }, [session.data?.user?.id]);
 
   useMotionValueEvent(scrollY, "change", (value) => {
     if (value > 100) {
@@ -166,9 +189,12 @@ export const MobileNavbar = () => {
               <>
                 <div className="flex flex-col gap-2 w-full">
                   <div className="pb-3 mb-2 border-b border-border">
-                    <p className="text-[15px] font-semibold text-foreground">
-                      {session.data.user.name || session.data.user.email}
-                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="min-w-0 text-[15px] font-semibold text-foreground">
+                        {session.data.user.name || session.data.user.email}
+                      </p>
+                      <AccountPlanBadge planKey={planKey} size="sm" />
+                    </div>
                     {session.data.user.name && (
                       <p className="text-sm text-muted-foreground mt-1">
                         {session.data.user.email}

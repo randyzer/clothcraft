@@ -8,6 +8,7 @@ import { signOut, useSession } from "@/lib/auth-client";
 import { Background } from "@/components/background";
 import { Button } from "@/components/button";
 import { Container } from "@/components/container";
+import { AccountPlanBadge } from "@/components/account-plan-badge";
 import {
   getSubscriptionPlanTranslationKey,
   normalizeProfileName,
@@ -20,6 +21,7 @@ type UserProfile = {
   emailVerified: boolean;
   image?: string | null;
   credits: number;
+  planKey?: string | null;
   createdAt: string;
   subscription?: {
     planKey: string;
@@ -136,8 +138,9 @@ export default function SettingsPage() {
   };
 
   const displayUser = userProfile ?? session.data?.user;
+  const rawPlanKey = userProfile?.subscription?.planKey ?? userProfile?.planKey;
   const currentPlanKey = getSubscriptionPlanTranslationKey(
-    userProfile?.subscription?.planKey
+    rawPlanKey
   );
   const memberSince = displayUser?.createdAt
     ? new Date(displayUser.createdAt).toLocaleDateString(
@@ -267,12 +270,17 @@ export default function SettingsPage() {
 
               <div className="mt-6 space-y-4">
                 <div className="rounded-2xl bg-muted/50 p-4">
-                  <p className="text-sm text-muted-foreground">
-                    {t("sections.billing.currentPlan")}
-                  </p>
-                  <p className="mt-1 text-lg font-semibold text-card-foreground">
-                    {tDashboard(`cards.statistics.plans.${currentPlanKey}`)}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        {t("sections.billing.currentPlan")}
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-card-foreground">
+                        {tDashboard(`cards.statistics.plans.${currentPlanKey}`)}
+                      </p>
+                    </div>
+                    <AccountPlanBadge planKey={rawPlanKey} />
+                  </div>
                 </div>
                 <div className="rounded-2xl bg-muted/50 p-4">
                   <p className="text-sm text-muted-foreground">

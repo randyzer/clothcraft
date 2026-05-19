@@ -11,9 +11,16 @@ import {
 } from "@/lib/billing/subscription";
 import { eq, sql } from "drizzle-orm";
 import { sendPurchaseEmail } from "@/lib/email";
+import {
+  findBillingSelectionByProductId,
+  getCreemEventPaymentId,
+  getCreemEventProductId,
+  parseCreemDateValue,
+} from "@/lib/payments/creem-webhook";
 
 type CreemMetadata = {
   userId?: string;
+  referenceId?: string;
   key?: string;
   kind?: "subscription" | "one_time";
   subscriptionId?: string;
@@ -52,17 +59,27 @@ type CreemWebhookObject = {
   order?: CreemOrderObject;
   subscription?: {
     id?: string;
+    metadata?: CreemMetadata;
+    product?: string | { id?: string };
   };
   subscriptionId?: string;
   last_transaction?: {
+    id?: string;
     order?: string;
   };
+  last_transaction_id?: string;
+  last_transaction_date?: CreemDateValue;
   product?: {
+    id?: string;
     price?: number;
     currency?: string;
   };
+  customer?: {
+    email?: string;
+  };
   current_period_end?: CreemDateValue;
   current_period_end_at?: CreemDateValue;
+  current_period_end_date?: CreemDateValue;
   currentPeriodEnd?: CreemDateValue;
   currentPeriodEndAt?: CreemDateValue;
   current_period?: CreemPeriodInfo;
@@ -73,6 +90,7 @@ type CreemWebhookObject = {
   next_payment_date?: CreemDateValue;
   next_billing_at?: CreemDateValue;
   next_billing_date?: CreemDateValue;
+  next_transaction_date?: CreemDateValue;
 };
 
 type CreemWebhookEvent = {
@@ -126,15 +144,16 @@ export async function POST(req: NextRequest) {
     
     // Extract metadata from the correct location based on event type
     let metadata: CreemMetadata = {};
-    let paymentId: string | undefined;
+    let paymentId = getCreemEventPaymentId(event);
     let subscriptionId: string | undefined;
     let amountCents = 0;
     let currency = "usd";
+    const productId = getCreemEventProductId(event);
+    const billingSelection = findBillingSelectionByProductId(productId);
     
     if (type === "checkout.completed") {
       // For checkout.completed, metadata is in the checkout object
-      metadata = mainObject?.metadata || {};
-      paymentId = mainObject?.order?.id || mainObject?.id;
+      metadata = mainObject?.metadata || mainObject?.subscription?.metadata || {};
       subscriptionId =
         mainObject?.order?.subscription_id ??
         mainObject?.subscription?.id ??
@@ -148,21 +167,36 @@ export async function POST(req: NextRequest) {
       // For subscription events, metadata should be in the subscription object
       metadata = mainObject?.metadata || {};
       subscriptionId = mainObject?.id;
-      const transactionOrderId = mainObject?.last_transaction?.order;
-      // Use transaction order id when available so checkout.completed and subscription.paid dedupe correctly
-      paymentId = transactionOrderId || eventId;
       amountCents = mainObject?.product?.price || 0;
       currency = mainObject?.product?.currency || "USD";
     }
     
     // Silent processing - no need to log metadata
     
-    const userId = metadata.userId;
-    const key = metadata.key;
-    const kind = metadata.kind;
+    let userId = metadata.userId ?? metadata.referenceId;
+    const key = metadata.key ?? billingSelection?.key;
+    const kind = metadata.kind ?? billingSelection?.kind;
+
+    if (!userId && mainObject.customer?.email) {
+      const matchedUsers = await db
+        .select({ id: userTable.id })
+        .from(userTable)
+        .where(eq(userTable.email, mainObject.customer.email))
+        .limit(1);
+
+      userId = matchedUsers[0]?.id;
+    }
 
     if (!userId || !key || !kind) {
-      // Don't log details to avoid PII exposure
+      console.error("[Creem Webhook] Missing billing context", {
+        eventId,
+        type,
+        hasProductId: Boolean(productId),
+        hasCustomerEmail: Boolean(mainObject.customer?.email),
+        hasUserId: Boolean(userId),
+        hasKey: Boolean(key),
+        hasKind: Boolean(kind),
+      });
       return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
     }
 
@@ -228,27 +262,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid key" }, { status: 400 });
     }
 
-    const parseDateValue = (value: unknown): Date | null => {
-      if (!value) return null;
-      if (value instanceof Date) {
-        return isNaN(value.getTime()) ? null : value;
-      }
-      if (typeof value === "number") {
-        const timestamp = value > 1e12 ? value : value * 1000;
-        const parsed = new Date(timestamp);
-        return isNaN(parsed.getTime()) ? null : parsed;
-      }
-      if (typeof value === "string") {
-        const parsed = new Date(value);
-        return isNaN(parsed.getTime()) ? null : parsed;
-      }
-      return null;
-    };
-
     const extractCurrentPeriodEnd = (): Date | null => {
       const candidates = [
         mainObject?.current_period_end,
         mainObject?.current_period_end_at,
+        mainObject?.current_period_end_date,
         mainObject?.currentPeriodEnd,
         mainObject?.currentPeriodEndAt,
         mainObject?.current_period?.end,
@@ -266,6 +284,8 @@ export async function POST(req: NextRequest) {
         mainObject?.next_payment_date,
         mainObject?.next_billing_at,
         mainObject?.next_billing_date,
+        mainObject?.next_transaction_date,
+        mainObject?.last_transaction_date,
         mainObject?.order?.current_period_end,
         mainObject?.order?.current_period_end_at,
         mainObject?.order?.current_period?.end,
@@ -281,7 +301,7 @@ export async function POST(req: NextRequest) {
       ];
 
       for (const candidate of candidates) {
-        const parsed = parseDateValue(candidate);
+        const parsed = parseCreemDateValue(candidate);
         if (parsed) return parsed;
       }
       return null;

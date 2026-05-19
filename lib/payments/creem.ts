@@ -33,9 +33,11 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
   // Create payload according to Creem API documentation
   const payload: Record<string, unknown> = {
     product_id: params.creemPriceId, // Creem expects product_id
+    request_id: `${params.kind}:${params.key}:${params.userId}`,
     success_url: params.successUrl,
     metadata: {
       userId: params.userId,
+      referenceId: params.userId,
       key: params.key,
       kind: params.kind,
     },
