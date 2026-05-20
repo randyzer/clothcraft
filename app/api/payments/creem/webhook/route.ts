@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/payments/creem";
 import { db } from "@/lib/db";
-import { creditLedger, payment as paymentTable, subscription as subscriptionTable, user as userTable } from "@/lib/db/schema";
-import { isPackKey, isSubscriptionKey, oneTimePacks, subscriptionPlans, PlanKey } from "@/constants/billing";
-import {
-  computeInitialGrant,
-  getGrantSchedule,
-  deleteSubscriptionSchedule,
-  resetSubscriptionSchedule,
-} from "@/lib/billing/subscription";
-import { eq, sql } from "drizzle-orm";
+import { subscription as subscriptionTable, user as userTable } from "@/lib/db/schema";
+import { isSubscriptionKey, subscriptionPlans } from "@/constants/billing";
+import { eq } from "drizzle-orm";
 import { sendPurchaseEmail } from "@/lib/email";
 import {
   findBillingSelectionByProductId,
@@ -17,6 +11,7 @@ import {
   getCreemEventProductId,
   parseCreemDateValue,
 } from "@/lib/payments/creem-webhook";
+import { fulfillCreemPayment } from "@/lib/payments/creem-fulfillment";
 
 type CreemMetadata = {
   userId?: string;
@@ -218,50 +213,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    // Idempotency: if payment already recorded, skip
-    const existing = await db
-      .select()
-      .from(paymentTable)
-      .where(eq(paymentTable.providerPaymentId, paymentId));
-    if (existing.length > 0) {
-      return NextResponse.json({ received: true });
-    }
-
-    let creditsToGrant = 0;
-    let planKey: PlanKey | null = null;
-    const paymentType: "one_time" | "subscription" = kind;
-    let scheduleResetContext: {
-      subscriptionId: string;
-      schedule: NonNullable<ReturnType<typeof getGrantSchedule>>;
-      grantsRemaining: number;
-      totalCreditsRemaining: number;
-      nextGrantAt: Date | null;
-    } | null = null;
-
-    if (kind === "one_time" && isPackKey(key)) {
-      creditsToGrant = oneTimePacks[key].credits;
-    } else if (kind === "subscription" && isSubscriptionKey(key)) {
-      planKey = key;
-      const plan = subscriptionPlans[key];
-      const schedule = getGrantSchedule(key);
-
-      if (schedule && subscriptionId) {
-        const initialGrant = computeInitialGrant(schedule);
-        creditsToGrant = initialGrant.creditsNow;
-        scheduleResetContext = {
-          subscriptionId,
-          schedule,
-          grantsRemaining: initialGrant.grantsRemaining,
-          totalCreditsRemaining: initialGrant.totalCreditsRemaining,
-          nextGrantAt: initialGrant.nextGrantAt,
-        };
-      } else {
-        creditsToGrant = plan.creditsPerCycle;
-      }
-    } else {
-      return NextResponse.json({ error: "Invalid key" }, { status: 400 });
-    }
-
     const extractCurrentPeriodEnd = (): Date | null => {
       const candidates = [
         mainObject?.current_period_end,
@@ -308,8 +259,8 @@ export async function POST(req: NextRequest) {
     };
 
     const derivePeriodEndFromPlan = (): Date | null => {
-      if (!planKey) return null;
-      const cycle = subscriptionPlans[planKey].cycle;
+      if (!isSubscriptionKey(key)) return null;
+      const cycle = subscriptionPlans[key].cycle;
       const result = new Date();
       if (cycle === "month") {
         result.setMonth(result.getMonth() + 1);
@@ -321,97 +272,16 @@ export async function POST(req: NextRequest) {
 
     const currentPeriodEnd = extractCurrentPeriodEnd() ?? derivePeriodEndFromPlan();
 
-    // Insert payment record
-    await db.insert(paymentTable).values({
-      id: paymentId,
-      provider: "creem",
-      providerPaymentId: paymentId,
+    const fulfillment = await fulfillCreemPayment({
+      paymentId,
       userId,
+      key,
+      kind,
       amountCents,
-      currency: currency.toLowerCase(),
-      status: "succeeded",
-      type: paymentType,
-      planKey: planKey ?? undefined,
-      creditsGranted: creditsToGrant,
-      raw: JSON.stringify(event).slice(0, 65000),
-    });
-
-    // Only upsert subscription record for actual subscription payments
-    // NOT for one-time purchases even if they have a subscription_id
-    if (kind === "subscription" && paymentType === "subscription" && planKey && subscriptionId) {
-      const subRows = await db
-        .select()
-        .from(subscriptionTable)
-        .where(eq(subscriptionTable.providerSubId, subscriptionId));
-
-      if (subRows.length === 0) {
-        await db.insert(subscriptionTable).values({
-          id: subscriptionId,
-          provider: "creem",
-          providerSubId: subscriptionId,
-          userId,
-          planKey,
-          status: "active",
-          currentPeriodEnd: currentPeriodEnd ?? null,
-          raw: JSON.stringify(mainObject).slice(0, 65000),
-        });
-      } else {
-        const updatePayload: Partial<typeof subscriptionTable.$inferInsert> = {
-          status: "active",
-          planKey,
-        };
-
-        if (currentPeriodEnd) {
-          updatePayload.currentPeriodEnd = currentPeriodEnd;
-        }
-
-        await db
-          .update(subscriptionTable)
-          .set(updatePayload)
-          .where(eq(subscriptionTable.providerSubId, subscriptionId));
-      }
-    }
-
-    await db.transaction(async tx => {
-      if (creditsToGrant > 0) {
-        await tx
-          .update(userTable)
-          .set({ credits: sql`${userTable.credits} + ${creditsToGrant}` })
-          .where(eq(userTable.id, userId));
-
-        await tx.insert(creditLedger).values({
-          id: paymentId,
-          userId,
-          delta: creditsToGrant,
-          reason: paymentType === "one_time" ? "one_time_pack" : "subscription_cycle",
-          paymentId,
-        });
-      }
-
-      if (planKey && kind === "subscription") {
-        await tx
-          .update(userTable)
-          .set({ planKey })
-          .where(eq(userTable.id, userId));
-      }
-
-      if (kind === "subscription" && subscriptionId) {
-        if (scheduleResetContext) {
-          await resetSubscriptionSchedule(
-            {
-              subscriptionId: scheduleResetContext.subscriptionId,
-              userId,
-              derivedSchedule: scheduleResetContext.schedule,
-              grantsRemaining: scheduleResetContext.grantsRemaining,
-              totalCreditsRemaining: scheduleResetContext.totalCreditsRemaining,
-              nextGrantAt: scheduleResetContext.nextGrantAt,
-            },
-            tx,
-          );
-        } else {
-          await deleteSubscriptionSchedule(subscriptionId, tx);
-        }
-      }
+      currency,
+      subscriptionId,
+      currentPeriodEnd,
+      raw: event,
     });
 
     // Get user email for sending notification
@@ -427,10 +297,10 @@ export async function POST(req: NextRequest) {
       // Prepare order details
       const orderDetails = {
         orderId: paymentId,
-        plan: planKey || key,
+        plan: fulfillment.planKey || key,
         amount: `$${(amountCents / 100).toFixed(2)} ${currency.toUpperCase()}`,
-        credits: creditsToGrant,
-        type: paymentType,
+        credits: fulfillment.creditsGranted ?? 0,
+        type: kind,
       };
 
       // Send purchase confirmation email

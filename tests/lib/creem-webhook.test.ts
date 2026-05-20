@@ -3,6 +3,8 @@ import {
   getCreemEventPaymentId,
   getCreemEventProductId,
   parseCreemDateValue,
+  parseCreemRequestId,
+  verifyCreemRedirectSignature,
 } from "@/lib/payments/creem-webhook";
 
 describe("creem webhook helpers", () => {
@@ -58,5 +60,33 @@ describe("creem webhook helpers", () => {
     expect(parseCreemDateValue("2026-06-19T07:22:00.000Z")?.toISOString()).toBe(
       "2026-06-19T07:22:00.000Z"
     );
+  });
+
+  it("parses internally generated request ids", () => {
+    expect(parseCreemRequestId("subscription:starter_monthly:user_123")).toEqual({
+      kind: "subscription",
+      key: "starter_monthly",
+      userId: "user_123",
+    });
+  });
+
+  it("verifies Creem redirect signatures using sorted non-empty params", async () => {
+    const params = {
+      checkout_id: "ch_123",
+      order_id: "ord_123",
+      customer_id: "cust_123",
+      product_id: "prod_123",
+      request_id: "subscription:starter_monthly:user_123",
+      signature:
+        "3452656690dccfdb474a687ceddfaa460aee4f5414703650ccc23211ec6b348c",
+    };
+
+    expect(await verifyCreemRedirectSignature(params, "secret_key")).toBe(true);
+    expect(
+      await verifyCreemRedirectSignature(
+        { ...params, product_id: "prod_tampered" },
+        "secret_key"
+      )
+    ).toBe(false);
   });
 });

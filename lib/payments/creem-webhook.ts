@@ -5,6 +5,7 @@ import {
   subscriptionPlans,
   type BillingKind,
 } from "@/constants/billing";
+import crypto from "node:crypto";
 
 type CreemEventLike = {
   id?: string;
@@ -102,4 +103,54 @@ export function parseCreemDateValue(value: unknown): Date | null {
   }
 
   return null;
+}
+
+export function parseCreemRequestId(requestId?: string | null) {
+  if (!requestId) {
+    return null;
+  }
+
+  const [kind, key, ...userIdParts] = requestId.split(":");
+  const userId = userIdParts.join(":");
+
+  if (
+    (kind !== "subscription" && kind !== "one_time") ||
+    !key ||
+    !userId
+  ) {
+    return null;
+  }
+
+  return { kind, key, userId };
+}
+
+export async function verifyCreemRedirectSignature(
+  params: Record<string, string | null | undefined>,
+  apiKey: string
+) {
+  const signature = params.signature;
+  if (!signature) {
+    return false;
+  }
+
+  const signaturePayload = Object.keys(params)
+    .filter((key) => key !== "signature")
+    .filter((key) => params[key] !== null && params[key] !== undefined)
+    .sort()
+    .map((key) => `${key}=${params[key]}`)
+    .join("|");
+
+  const expected = crypto
+    .createHmac("sha256", apiKey)
+    .update(signaturePayload)
+    .digest("hex");
+
+  const receivedBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+
+  if (receivedBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(receivedBuffer, expectedBuffer);
 }

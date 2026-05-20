@@ -56,11 +56,29 @@ export default function DashboardPage() {
     
     if (success === "1" || checkoutId || orderId || subscriptionId) {
       setPaymentSuccess(true);
+      const reconcilePayment = async () => {
+        if (!checkoutId) {
+          return;
+        }
+
+        const payload = Object.fromEntries(searchParams.entries());
+        const response = await fetch("/api/payments/creem/reconcile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          await fetchUserProfile();
+        }
+      };
 
       let attempts = 0;
       void fetchUserProfile();
+      void reconcilePayment();
       const intervalId = window.setInterval(() => {
         attempts += 1;
+        void reconcilePayment();
         void fetchUserProfile();
 
         if (attempts >= 20) {
