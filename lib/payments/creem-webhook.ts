@@ -133,12 +133,21 @@ export async function verifyCreemRedirectSignature(
     return false;
   }
 
-  const signaturePayload = Object.keys(params)
-    .filter((key) => key !== "signature")
+  const creemRedirectKeys = [
+    "checkout_id",
+    "order_id",
+    "customer_id",
+    "subscription_id",
+    "product_id",
+    "request_id",
+  ];
+  const signaturePayload = creemRedirectKeys
     .filter((key) => params[key] !== null && params[key] !== undefined)
+    .filter((key) => params[key] !== "")
+    .filter((key) => params[key] !== "null")
     .sort()
     .map((key) => `${key}=${params[key]}`)
-    .join("|");
+    .join("&");
 
   const expected = crypto
     .createHmac("sha256", apiKey)

@@ -6,6 +6,7 @@ import {
   parseCreemRequestId,
   verifyCreemRedirectSignature,
 } from "@/lib/payments/creem-webhook";
+import crypto from "node:crypto";
 
 describe("creem webhook helpers", () => {
   it("maps Creem product ids back to internal billing selections", () => {
@@ -70,15 +71,20 @@ describe("creem webhook helpers", () => {
     });
   });
 
-  it("verifies Creem redirect signatures using sorted non-empty params", async () => {
+  it("verifies Creem redirect signatures using official sorted params", async () => {
     const params = {
       checkout_id: "ch_123",
       order_id: "ord_123",
       customer_id: "cust_123",
       product_id: "prod_123",
       request_id: "subscription:starter_monthly:user_123",
-      signature:
-        "3452656690dccfdb474a687ceddfaa460aee4f5414703650ccc23211ec6b348c",
+      success: "1",
+      signature: crypto
+        .createHmac("sha256", "secret_key")
+        .update(
+          "checkout_id=ch_123&customer_id=cust_123&order_id=ord_123&product_id=prod_123&request_id=subscription:starter_monthly:user_123"
+        )
+        .digest("hex"),
     };
 
     expect(await verifyCreemRedirectSignature(params, "secret_key")).toBe(true);

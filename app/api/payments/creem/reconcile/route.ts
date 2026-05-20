@@ -96,13 +96,16 @@ export async function POST(req: NextRequest) {
     }
 
     const body = (await req.json()) as ReconcileBody;
-    if (!body.checkout_id || !body.product_id || !body.signature) {
-      return NextResponse.json({ error: "Missing Creem redirect fields" }, { status: 400 });
+    if (!body.checkout_id) {
+      return NextResponse.json({ error: "Missing Creem checkout id" }, { status: 400 });
     }
 
     const validSignature = await verifyCreemRedirectSignature(body, apiKey);
     if (!validSignature) {
-      return NextResponse.json({ error: "Invalid Creem redirect signature" }, { status: 400 });
+      console.warn("[Creem Reconcile] Redirect signature did not verify; using checkout lookup", {
+        hasSignature: Boolean(body.signature),
+        hasProductId: Boolean(body.product_id),
+      });
     }
 
     const checkout = await fetchCreemCheckout(body.checkout_id);
@@ -121,6 +124,10 @@ export async function POST(req: NextRequest) {
     }
 
     const productId = getProductId(checkout.product) ?? checkout.order?.product ?? body.product_id;
+    if (body.product_id && productId && body.product_id !== productId) {
+      return NextResponse.json({ error: "Creem product mismatch" }, { status: 400 });
+    }
+
     const billingSelection =
       findBillingSelectionByProductId(productId) ??
       (checkout.metadata?.key && checkout.metadata?.kind
